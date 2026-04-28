@@ -1,1 +1,706 @@
-<h1>Radar Web Export Ready</h1>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>板块资金雷达 | 知行图表交易</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="radar_data_latest.js"></script>
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-font-smoothing: antialiased; }
+        
+        .table-head { background-color: #f1f5f9; border-bottom: 2px solid #e2e8f0; color: #475569; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.025em; }
+        .sortable-head { cursor: pointer; user-select: none; transition: background-color 0.2s; }
+        .sortable-head:hover { background-color: #e2e8f0; }
+        .data-row { border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; height: 38px; transition: background-color 0.15s ease; }
+        .data-row:hover { background-color: #f8fafc; } 
+        .text-up { color: #ef4444; font-weight: 700; }
+        .text-down { color: #22c55e; font-weight: 700; }
+        
+        .rank-tag { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 0.7rem; font-weight: 800; }
+        .bg-rank-up { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;}
+        .bg-rank-down { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac;}
+        .highlight-col { background-color: #fffbeb; font-weight: 800; color: #92400e; height: 100%; display: flex; align-items: center; justify-content: center; border-left: 1px solid rgba(254, 243, 199, 0.8); border-right: 1px solid rgba(254, 243, 199, 0.8); }
+        
+        .calendar-tray { background-color: #fcfcfc; border-bottom: 2px solid #e2e8f0; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); }
+        .cal-box { width: 30px; height: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 4px; font-size: 0.65rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.1s;}
+        .cal-box:hover { transform: translateY(-2px); box-shadow: 0 3px 6px rgba(0,0,0,0.1); border-color: #94a3b8; }
+        .cal-date { font-size: 0.5rem; color: #64748b; line-height: 1; margin-bottom: 2px; font-weight: 600;}
+        .cal-rank { font-weight: 800; line-height: 1;}
+        
+        .heat-top-extreme { background-color: #ef4444; color: white; border-color: #dc2626;} 
+        .heat-top-high { background-color: #fca5a5; color: #7f1d1d; border-color: #f87171;} 
+        .heat-mid { background-color: #f8fafc; color: #94a3b8; } 
+        .heat-bot-high { background-color: #86efac; color: #14532d; border-color: #4ade80;} 
+        .heat-bot-extreme { background-color: #22c55e; color: white; border-color: #16a34a;} 
+        
+        .custom-tooltip { position: relative; display: inline-flex; align-items: center; }
+        .custom-tooltip .tooltip-text { visibility: hidden; width: 260px; background-color: #1e293b; color: #fff; text-align: left; border-radius: 8px; padding: 12px; position: absolute; z-index: 9999; top: 140%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.2s; font-weight: 400; font-size: 0.75rem; line-height: 1.6; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); pointer-events: none; }
+        .custom-tooltip .tooltip-text::after { content: ""; position: absolute; bottom: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: transparent transparent #1e293b transparent; }
+        .custom-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+        .tooltip-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; background: #94a3b8; color: white; border-radius: 50%; font-size: 9px; cursor: help; margin-left: 4px; font-weight: bold;}
+        .flex-center-y { display: flex; align-items: center; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(5px); z-index: 50000; display: flex; align-items: center; justify-content: center; opacity: 0; animation: fadeIn 0.2s forwards;}
+        .modal-content { background: #fff; width: 90%; max-width: 800px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); overflow: hidden; transform: scale(0.95); animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        [v-cloak] { display: none; }
+        input[type="checkbox"] { cursor: pointer; width: 14px; height: 14px; accent-color: #3b82f6; }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes scaleUp { to { transform: scale(1); } }
+        .animate-fade-in-down { animation: fadeInDown 0.2s ease-out forwards; }
+        
+        .sparkline { overflow: visible; }
+        /* 隐藏滚动条样式 */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-100 pb-16">
+
+<div id="app" v-cloak class="p-4 lg:p-6 max-w-[1800px] mx-auto relative">
+    
+    <div class="mb-5 px-2 flex items-center gap-1 overflow-x-auto whitespace-nowrap hide-scrollbar relative z-20">
+        <div class="text-[10px] font-black text-slate-400 tracking-widest uppercase mr-4 flex items-center gap-1.5 bg-slate-200/50 px-2 py-1 rounded">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            OneChart 矩阵
+        </div>
+        
+        <a href="https://onechart.top" class="px-4 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-full shadow-sm shadow-blue-200 transition-all flex items-center gap-2">
+            📊 板块资金雷达
+        </a>
+        
+        <a href="https://simu.onechart.top" class="px-4 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-white rounded-full transition-all flex items-center gap-2">
+            🕹️ 交易模拟器
+        </a>
+        
+        <a href="https://bs.onechart.top" class="px-4 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-white rounded-full transition-all flex items-center gap-2">
+            🧮 仓位计算器
+        </a>
+    </div>
+
+    <div class="mb-5 bg-white px-5 py-3 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 relative z-10">
+        <div class="flex items-center gap-3 pr-4 border-r border-slate-200">
+            <h1 class="text-2xl font-black tracking-tight text-slate-800">板块资金雷达</h1>
+            <span class="text-xs font-bold text-slate-400 mt-1">By <span class="text-blue-600">知行图表交易</span></span>
+        </div>
+        
+        <div class="relative flex-1 max-w-sm">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <input v-model="searchQuery" @focus="showDropdown = true" @blur="hideDropdownDelay" type="text" placeholder="检索名称或代码 (如 半导体)..." class="block w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium transition-all">
+            
+            <div v-if="showDropdown && searchResults.length > 0" class="absolute z-50 mt-1 w-full bg-white shadow-xl rounded-lg border border-slate-200 max-h-80 overflow-y-auto">
+                <div v-for="res in searchResults" :key="res.ts_code" @click="openModal(res)" class="px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-slate-50 last:border-0 flex justify-between items-center transition-colors">
+                    <div>
+                        <span class="font-bold text-slate-800">{{ cleanName(res.index_name) }}</span>
+                        <span class="ml-2 text-xs font-mono text-slate-400 font-medium">{{ res.ts_code }}</span>
+                    </div>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" :class="res.type === '概念板块' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'">
+                        {{ res.type.replace('板块', '') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="flex bg-slate-100 p-1 rounded-lg shadow-inner border border-slate-200">
+                <button @click="activeType = '概念板块'; closeAllCalendars()" :class="activeType === '概念板块' ? 'bg-white shadow text-blue-600 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 text-sm font-bold rounded-md transition-all">概念</button>
+                <button @click="activeType = '行业板块'; closeAllCalendars()" :class="activeType === '行业板块' ? 'bg-white shadow text-blue-600 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 text-sm font-bold rounded-md transition-all">行业</button>
+            </div>
+
+            <div class="flex bg-slate-100 p-1 rounded-lg shadow-inner border border-slate-200">
+                <button v-for="tab in tabs" @click="activeTab = tab.id; closeAllCalendars()" 
+                        :class="activeTab === tab.id ? 'bg-white shadow text-slate-800 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'"
+                        class="px-4 py-1.5 text-sm font-bold rounded-md transition-all">
+                    {{ tab.name }}
+                </button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 pl-4 border-l border-slate-200">
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">日期</span>
+                <select v-model="selectedDate" @change="closeAllCalendars()" class="text-base font-black text-slate-800 bg-slate-50 border border-slate-200 rounded px-2 py-1 focus:outline-none cursor-pointer">
+                    <option v-for="date in availableDates" :key="date" :value="date">{{ date }}</option>
+                </select>
+            </div>
+            <button @click="exportToTDX" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-1.5 px-4 rounded-lg shadow flex items-center transition">
+                导出勾选 ({{ selectedSectors.length }})
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+        
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm relative z-0">
+            <div class="p-3 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                <div class="flex items-center">
+                    <span class="text-[1.05rem] font-black text-red-600 tracking-tight">资金进攻榜</span>
+                    <span class="ml-3 text-[10px] text-slate-500 font-bold border border-slate-300 px-2 py-0.5 rounded-full bg-white shadow-sm">TOP 10%</span>
+                </div>
+                <button @click="clearSelection" class="text-xs font-bold text-slate-500 hover:text-blue-600">清空勾选</button>
+            </div>
+            
+            <div class="grid grid-cols-12 table-head items-center py-1.5 px-1">
+                <div class="col-span-1 text-center flex justify-center items-center custom-tooltip">
+                    <input type="checkbox" v-model="isAllTopSelected" class="cursor-pointer">
+                    <div class="tooltip-text" style="width:100px; left:200%;">全选/取消全选</div>
+                </div>
+                
+                <div class="col-span-1 text-center">No.</div>
+                <div class="col-span-2 text-left pl-2">板块名称</div>
+                <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'pct_change')">
+                    涨跌幅 <span v-html="getSortIcon('top', 'pct_change')"></span>
+                </div>
+                
+                <div v-if="activeTab !== 'Amount'" class="col-span-2 text-center sortable-head flex-center-y justify-center custom-tooltip" @click="handleSort('top', activeTab + '_Score')">
+                    市值加权 <span class="tooltip-icon">?</span>
+                    <div class="tooltip-text"><strong class="text-blue-300">说明：</strong> 后端特征算法算出的综合加权值。</div>
+                    <span v-html="getSortIcon('top', activeTab + '_Score')"></span>
+                </div>
+                
+                <div v-if="activeTab === 'Amount'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Ratio_Raw_Pct')">
+                    单日流入率 <span v-html="getSortIcon('top', 'Ratio_Raw_Pct')"></span>
+                </div>
+                
+                <div v-if="activeTab === 'Swing'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Swing_Ratio_Val')">
+                    波段流入率 <span v-html="getSortIcon('top', 'Swing_Ratio_Val')"></span>
+                </div>
+                
+                <div v-if="activeTab === 'Ratio'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Ratio_Raw_Pct')">
+                    单日流入率 <span v-html="getSortIcon('top', 'Ratio_Raw_Pct')"></span>
+                </div>
+                
+                <div v-if="activeTab === 'Amount'" class="col-span-3 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Amount_Raw_BN')">
+                    单日净额 <span v-html="getSortIcon('top', 'Amount_Raw_BN')"></span>
+                </div>
+
+                <div v-if="activeTab !== 'Amount'" class="col-span-1 text-center sortable-head flex-center-y justify-center text-[11px]" @click="handleSort('top', 'Amount_Raw_BN')">
+                    净额 <span v-html="getSortIcon('top', 'Amount_Raw_BN')"></span>
+                </div>
+                
+                <div class="col-span-1 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', activeTab + '_Top30d')">
+                    在榜 <span v-html="getSortIcon('top', activeTab + '_Top30d')"></span>
+                </div>
+            </div>
+
+            <div class="flex flex-col">
+                <template v-for="item in topList" :key="item.index_name">
+                    <label class="grid grid-cols-12 px-1 data-row items-stretch cursor-pointer relative" :class="{'bg-blue-50 border-l-2 border-blue-500': expandedCal === item.index_name}">
+                        <div class="col-span-1 text-center flex-center-y justify-center"><input type="checkbox" v-model="selectedSectors" :value="item.index_name" @click.stop></div>
+                        <div class="col-span-1 text-center flex-center-y justify-center"><span class="rank-tag bg-rank-up">{{ item[activeTab + '_RankPos'] }}</span></div>
+                        <div class="col-span-2 text-left pl-2 font-bold text-slate-800 truncate pr-2 flex-center-y hover:text-blue-600 transition" @click.stop="openModal(item)">{{ cleanName(item.index_name) }}</div>
+                        <div class="col-span-2 text-center text-sm font-semibold flex-center-y justify-center" :class="item.pct_change >= 0 ? 'text-up' : 'text-down'">{{ item.pct_change > 0 ? '+' : '' }}{{ item.pct_change.toFixed(2) }}%</div>
+                        
+                        <div v-if="activeTab !== 'Amount'" class="col-span-2 flex-center-y justify-center highlight-col font-black">
+                            <span class="text-sm">{{ item[activeTab + '_Score'].toFixed(1) }}</span>
+                        </div>
+                        <div v-if="activeTab === 'Amount'" class="col-span-2 flex-center-y justify-center">
+                            <span class="text-sm font-bold text-slate-700">{{ (item.Ratio_Raw_Pct * 100).toFixed(2) }}%</span>
+                        </div>
+                        <div v-if="activeTab === 'Swing'" class="col-span-2 flex-center-y justify-center highlight-col">
+                            <span class="text-sm">{{ (item.Swing_Ratio_Val * 100).toFixed(2) }}%</span>
+                        </div>
+                        <div v-if="activeTab === 'Ratio'" class="col-span-2 flex-center-y justify-center highlight-col">
+                            <span class="text-sm">{{ (item.Ratio_Raw_Pct * 100).toFixed(2) }}%</span>
+                        </div>
+                        <div v-if="activeTab === 'Amount'" class="col-span-3 flex-center-y justify-center highlight-col">
+                            <span class="text-sm">{{ item.Amount_Raw_BN.toFixed(2) }} 亿</span>
+                        </div>
+                        <div v-if="activeTab !== 'Amount'" class="col-span-1 text-center flex-center-y justify-center text-[10px] font-bold text-slate-500">
+                             {{ item.Amount_Raw_BN.toFixed(1) }} 亿
+                        </div>
+                        <div class="col-span-1 text-center flex-center-y justify-center" @click.stop="toggleCalendar(item.index_name)">
+                            <span class="inline-flex w-6 h-6 items-center justify-center bg-slate-100 hover:bg-blue-200 text-blue-700 font-black rounded transition border border-slate-200">{{ item[activeTab + '_Top30d'] }}</span>
+                        </div>
+                    </label>
+                    <div v-if="expandedCal === item.index_name" class="calendar-tray p-3 col-span-12 w-full origin-top animate-fade-in-down">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[11px] font-bold text-slate-600">【{{ cleanName(item.index_name) }}】近 30 交易日排名轨迹</span>
+                            <button @click.stop="expandedCal = null" class="text-[10px] bg-white border border-slate-300 px-2 py-0.5 rounded shadow-sm hover:bg-slate-50 text-slate-600 font-bold">收起</button>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <div v-for="dateStr in availableDatesList" :key="dateStr" class="cal-box" :class="getHeatmapClass(getHistoricalRank(item.index_name, dateStr), 'top')" @click.stop="jumpToDate(dateStr)">
+                                <span class="cal-date">{{ dateStr.substring(5).replace('-', '') }}</span>
+                                <span class="cal-rank">{{ getHistoricalRank(item.index_name, dateStr) || '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm relative z-0">
+            <div class="p-3 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                <div class="flex items-center">
+                    <span class="text-[1.05rem] font-black text-green-600 tracking-tight">资金重灾区</span>
+                    <span class="ml-3 text-[10px] text-slate-500 font-bold border border-slate-300 px-2 py-0.5 rounded-full bg-white shadow-sm">BOTTOM 10%</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-12 table-head items-center py-1.5 px-1">
+                <div class="col-span-1 text-center flex justify-center items-center custom-tooltip">
+                    <input type="checkbox" v-model="isAllBotSelected" class="cursor-pointer">
+                    <div class="tooltip-text" style="width:100px; left:200%;">全选/取消全选</div>
+                </div>
+                <div class="col-span-1 text-center">No.</div>
+                <div class="col-span-2 text-left pl-2">板块名称</div>
+                <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'pct_change')">
+                    涨跌幅 <span v-html="getSortIcon('bot', 'pct_change')"></span>
+                </div>
+                <div v-if="activeTab !== 'Amount'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', activeTab + '_Score')">
+                    市值加权 <span v-html="getSortIcon('bot', activeTab + '_Score')"></span>
+                </div>
+                <div v-if="activeTab === 'Amount'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Ratio_Raw_Pct')">
+                    单日流入率 <span v-html="getSortIcon('bot', 'Ratio_Raw_Pct')"></span>
+                </div>
+                <div v-if="activeTab === 'Swing'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Swing_Ratio_Val')">
+                    波段流入率 <span v-html="getSortIcon('bot', 'Swing_Ratio_Val')"></span>
+                </div>
+                <div v-if="activeTab === 'Ratio'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Ratio_Raw_Pct')">
+                    单日流入率 <span v-html="getSortIcon('bot', 'Ratio_Raw_Pct')"></span>
+                </div>
+                <div v-if="activeTab === 'Amount'" class="col-span-3 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Amount_Raw_BN')">
+                    单日净额 <span v-html="getSortIcon('bot', 'Amount_Raw_BN')"></span>
+                </div>
+                <div v-if="activeTab !== 'Amount'" class="col-span-1 text-center sortable-head flex-center-y justify-center text-[11px]" @click="handleSort('bot', 'Amount_Raw_BN')">
+                    净额 <span v-html="getSortIcon('bot', 'Amount_Raw_BN')"></span>
+                </div>
+                <div class="col-span-1 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', activeTab + '_Bot30d')">
+                    在榜 <span v-html="getSortIcon('bot', activeTab + '_Bot30d')"></span>
+                </div>
+            </div>
+
+            <div class="flex flex-col">
+                <template v-for="item in botList" :key="item.index_name">
+                    <label class="grid grid-cols-12 px-1 data-row items-stretch cursor-pointer relative" :class="{'bg-green-50 border-l-2 border-green-500': expandedCal === item.index_name}">
+                        <div class="col-span-1 text-center flex-center-y justify-center"><input type="checkbox" v-model="selectedSectors" :value="item.index_name" @click.stop></div>
+                        <div class="col-span-1 text-center flex-center-y justify-center"><span class="rank-tag bg-rank-down">{{ item[activeTab + '_RankPos'] }}</span></div>
+                        <div class="col-span-2 text-left pl-2 font-bold text-slate-800 truncate pr-2 flex-center-y hover:text-green-600 transition" @click.stop="openModal(item)">{{ cleanName(item.index_name) }}</div>
+                        <div class="col-span-2 text-center text-sm font-semibold flex-center-y justify-center" :class="item.pct_change >= 0 ? 'text-up' : 'text-down'">{{ item.pct_change > 0 ? '+' : '' }}{{ item.pct_change.toFixed(2) }}%</div>
+                        <div v-if="activeTab !== 'Amount'" class="col-span-2 flex-center-y justify-center highlight-col font-black">
+                             <span class="text-sm">{{ item[activeTab + '_Score'].toFixed(1) }}</span>
+                        </div>
+                        <div v-if="activeTab === 'Amount'" class="col-span-2 flex-center-y justify-center">
+                            <span class="text-sm font-bold text-slate-700">{{ (item.Ratio_Raw_Pct * 100).toFixed(2) }}%</span>
+                        </div>
+                        <div v-if="activeTab === 'Swing'" class="col-span-2 flex-center-y justify-center highlight-col">
+                            <span class="text-sm">{{ (item.Swing_Ratio_Val * 100).toFixed(2) }}%</span>
+                        </div>
+                        <div v-if="activeTab === 'Ratio'" class="col-span-2 flex-center-y justify-center highlight-col">
+                            <span class="text-sm">{{ (item.Ratio_Raw_Pct * 100).toFixed(2) }}%</span>
+                        </div>
+                        <div v-if="activeTab === 'Amount'" class="col-span-3 flex-center-y justify-center highlight-col">
+                            <span class="text-sm">{{ item.Amount_Raw_BN.toFixed(2) }} 亿</span>
+                        </div>
+                        <div v-if="activeTab !== 'Amount'" class="col-span-1 text-center flex-center-y justify-center text-[10px] font-bold text-slate-500">
+                             {{ item.Amount_Raw_BN.toFixed(1) }} 亿
+                        </div>
+                        <div class="col-span-1 text-center flex-center-y justify-center" @click.stop="toggleCalendar(item.index_name)">
+                            <span class="inline-flex w-6 h-6 items-center justify-center bg-slate-100 hover:bg-green-200 text-green-700 font-black rounded transition border border-slate-200">{{ item[activeTab + '_Bot30d'] }}</span>
+                        </div>
+                    </label>
+                    <div v-if="expandedCal === item.index_name" class="calendar-tray p-3 col-span-12 w-full origin-top animate-fade-in-down">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[11px] font-bold text-slate-600">【{{ cleanName(item.index_name) }}】近 30 交易日排名轨迹</span>
+                            <button @click.stop="expandedCal = null" class="text-[10px] bg-white border border-slate-300 px-2 py-0.5 rounded shadow-sm hover:bg-slate-50 text-slate-600 font-bold">收起</button>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <div v-for="dateStr in availableDatesList" :key="dateStr" class="cal-box" :class="getHeatmapClass(getHistoricalRank(item.index_name, dateStr), 'bot')" @click.stop="jumpToDate(dateStr)">
+                                <span class="cal-date">{{ dateStr.substring(5).replace('-', '') }}</span>
+                                <span class="cal-rank">{{ getHistoricalRank(item.index_name, dateStr) || '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="modalData" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-content flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-slate-200 bg-slate-50 flex justify-between items-start">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-3xl font-black text-slate-800 tracking-tight">{{ cleanName(modalData.index_name) }}</h2>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded shadow-sm" :class="modalData.type === '概念板块' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'">
+                            {{ modalData.type.replace('板块', '') }}
+                        </span>
+                        <span class="text-sm font-mono font-bold text-slate-400">{{ modalData.ts_code }}</span>
+                        <button @click="exportSingleSector(modalData)" class="ml-2 bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 text-[11px] px-2.5 py-1.5 rounded shadow-sm font-bold flex items-center gap-1 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            导出当前板块
+                        </button>
+                    </div>
+                    <div class="mt-3 flex items-center text-sm font-bold">
+                        <span class="text-slate-500 mr-2 uppercase text-xs tracking-wider">今日领涨:</span>
+                        <span class="text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm mr-2">{{ modalData.lead_stock }}</span>
+                        <span :class="modalData.pct_change_stock >= 0 ? 'text-up' : 'text-down'" class="text-base">{{ modalData.pct_change_stock > 0 ? '+' : '' }}{{ modalData.pct_change_stock.toFixed(2) }}%</span>
+                    </div>
+                </div>
+                <button @click="closeModal" class="p-2 hover:bg-slate-200 rounded-full transition"><svg class="w-6 h-6 text-slate-400 hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+
+            <div class="p-8 overflow-y-auto bg-white">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">当日数据切片 (排名)</h3>
+                <div class="grid grid-cols-4 gap-5 mb-10">
+                    <div class="p-5 rounded-xl shadow-sm relative overflow-hidden transition-colors bg-slate-50 border border-slate-100">
+                        <div class="text-xs text-slate-500 mb-1 font-bold">当日涨跌幅</div>
+                        <div class="text-2xl font-black" :class="modalData.pct_change >= 0 ? 'text-up' : 'text-down'">{{ modalData.pct_change > 0 ? '+' : '' }}{{ modalData.pct_change.toFixed(2) }}%</div>
+                    </div>
+                    <div class="p-5 rounded-xl shadow-sm relative overflow-hidden transition-colors" :class="modalActiveTab === 'Swing' ? 'bg-blue-50 border border-blue-200' : 'bg-slate-50 border border-slate-100'">
+                        <div v-if="modalActiveTab === 'Swing'" class="absolute -right-4 -top-4 w-16 h-16 bg-blue-100 rounded-full opacity-50"></div>
+                        <div class="text-xs mb-1 font-bold" :class="modalActiveTab === 'Swing' ? 'text-blue-600' : 'text-slate-500'">波段流入排名</div>
+                        <div class="text-2xl font-black flex items-baseline gap-1" :class="modalActiveTab === 'Swing' ? 'text-blue-800' : 'text-slate-800'">
+                            <span class="text-sm font-bold" :class="modalActiveTab === 'Swing' ? 'text-blue-600' : 'text-slate-500'">No.</span>{{ modalData.Swing_RankPos }}
+                        </div>
+                        <div class="text-[11px] mt-1 font-medium" :class="modalActiveTab === 'Swing' ? 'text-blue-500' : 'text-slate-400'">波段均值: <span class="font-bold" :class="modalActiveTab === 'Swing' ? 'text-blue-700' : 'text-slate-700'">{{ (modalData.Swing_Ratio_Val * 100).toFixed(2) }}%</span></div>
+                    </div>
+                    <div class="p-5 rounded-xl shadow-sm relative overflow-hidden transition-colors" :class="modalActiveTab === 'Ratio' ? 'bg-blue-50 border border-blue-200' : 'bg-slate-50 border border-slate-100'">
+                        <div v-if="modalActiveTab === 'Ratio'" class="absolute -right-4 -top-4 w-16 h-16 bg-blue-100 rounded-full opacity-50"></div>
+                        <div class="text-xs mb-1 font-bold" :class="modalActiveTab === 'Ratio' ? 'text-blue-600' : 'text-slate-500'">单日流入排名</div>
+                        <div class="text-2xl font-black flex items-baseline gap-1" :class="modalActiveTab === 'Ratio' ? 'text-blue-800' : 'text-slate-800'">
+                            <span class="text-sm font-bold" :class="modalActiveTab === 'Ratio' ? 'text-blue-600' : 'text-slate-500'">No.</span>{{ modalData.Ratio_RankPos }}
+                        </div>
+                        <div class="text-[11px] mt-1 font-medium" :class="modalActiveTab === 'Ratio' ? 'text-blue-500' : 'text-slate-400'">占比: <span class="font-bold" :class="modalActiveTab === 'Ratio' ? 'text-blue-700' : 'text-slate-700'">{{ (modalData.Ratio_Raw_Pct * 100).toFixed(2) }}%</span></div>
+                    </div>
+                    <div class="p-5 rounded-xl shadow-sm relative overflow-hidden transition-colors" :class="modalActiveTab === 'Amount' ? 'bg-blue-50 border border-blue-200' : 'bg-slate-50 border border-slate-100'">
+                        <div v-if="modalActiveTab === 'Amount'" class="absolute -right-4 -top-4 w-16 h-16 bg-blue-100 rounded-full opacity-50"></div>
+                        <div class="text-xs mb-1 font-bold" :class="modalActiveTab === 'Amount' ? 'text-blue-600' : 'text-slate-500'">单日净额排名</div>
+                        <div class="text-2xl font-black flex items-baseline gap-1" :class="modalActiveTab === 'Amount' ? 'text-blue-800' : 'text-slate-800'">
+                             <span class="text-sm font-bold" :class="modalActiveTab === 'Amount' ? 'text-blue-600' : 'text-slate-500'">No.</span>{{ modalData.Amount_RankPos }}
+                        </div>
+                        <div class="text-[11px] mt-1 font-medium" :class="modalActiveTab === 'Amount' ? 'text-blue-500' : 'text-slate-400'">主力净流入: <span class="font-bold" :class="modalActiveTab === 'Amount' ? 'text-blue-700' : 'text-slate-700'">{{ modalData.Amount_Raw_BN.toFixed(2) }} 亿</span></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-end mb-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        近 30 日 [{{ modalActiveTab === 'Swing' ? '波段流入' : (modalActiveTab === 'Ratio' ? '单日流入' : '单日净额') }}] 排名走势
+                    </h3>
+                    <div class="flex bg-slate-100 p-1 rounded-lg shadow-inner border border-slate-200 inline-flex">
+                        <button v-for="tab in tabs" @click="modalActiveTab = tab.id" 
+                                :class="modalActiveTab === tab.id ? 'bg-white shadow text-blue-600 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'"
+                                class="px-3 py-1 text-[11px] font-bold rounded-md transition-all">
+                            {{ tab.name }}
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="relative w-full h-44 mb-10 mt-2 border border-slate-200 rounded-xl bg-white overflow-hidden shadow-inner">
+                    <svg class="sparkline w-full h-full absolute inset-0" viewBox="0 0 400 160" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"></stop>
+                                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"></stop>
+                            </linearGradient>
+                            <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="6" height="6">
+                                <path d="M-1,1 l2,-2 M0,6 l6,-6 M5,7 l2,-2" stroke="#fca5a5" stroke-width="0.75" stroke-opacity="0.4"/>
+                            </pattern>
+                        </defs>
+                        <rect x="0" y="0" width="400" :height="getChartData(modalData.index_name, modalActiveTab).top10Y" fill="url(#diagonalHatch)"></rect>
+                        <line x1="0" :y1="getChartData(modalData.index_name, modalActiveTab).top10Y" x2="400" :y2="getChartData(modalData.index_name, modalActiveTab).top10Y" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="4 4"></line>
+                        <line x1="0" y1="80" x2="400" y2="80" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2"></line>
+                        <rect x="0" :y="getChartData(modalData.index_name, modalActiveTab).bot10Y" width="400" :height="160 - getChartData(modalData.index_name, modalActiveTab).bot10Y" fill="#dcfce7" opacity="0.4"></rect>
+                        <line x1="0" :y1="getChartData(modalData.index_name, modalActiveTab).bot10Y" x2="400" :y2="getChartData(modalData.index_name, modalActiveTab).bot10Y" stroke="#86efac" stroke-width="1.5" stroke-dasharray="4 4"></line>
+                        <path :d="getChartData(modalData.index_name, modalActiveTab).areaPath" fill="url(#areaGradient)"></path>
+                        <path :d="getChartData(modalData.index_name, modalActiveTab).linePath" stroke="#2563eb" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <circle v-for="pt in getChartData(modalData.index_name, modalActiveTab).points" :cx="pt.x" :cy="pt.y" r="3" fill="#ffffff" stroke="#1d4ed8" stroke-width="2"></circle>
+                    </svg>
+                    <div class="absolute left-1 top-1 text-[10px] text-red-500 font-bold bg-white/80 px-1.5 py-0.5 rounded shadow-sm border border-red-100">Top 1</div>
+                    <div class="absolute left-1 bottom-1 text-[10px] text-green-600 font-bold bg-white/80 px-1.5 py-0.5 rounded shadow-sm border border-green-100">垫底</div>
+                    <div class="absolute right-1 bottom-1 text-[10px] text-blue-600 font-black bg-white/90 px-1.5 py-0.5 rounded shadow-sm border border-blue-100">{{ availableDatesList[0] ? availableDatesList[0].substring(5) : '' }} (最新)</div>
+                    <div class="absolute left-[38px] bottom-1 text-[10px] text-slate-500 font-bold bg-white/80 px-1.5 py-0.5 rounded shadow-sm border border-slate-100">{{ availableDatesList[availableDatesList.length - 1] ? availableDatesList[availableDatesList.length - 1].substring(5) : '' }} (起)</div>
+                </div>
+
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">成分近似板块 (Jaccard 关联挖掘)</h3>
+                <div class="flex flex-wrap gap-3">
+                    <button v-for="sim in similarSectors" :key="sim.name" @click="openModalByName(sim.name)" class="flex items-center bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md px-4 py-2.5 rounded-lg transition group">
+                        <span class="font-bold text-sm text-slate-700 group-hover:text-blue-600 transition">{{ sim.name }}</span>
+                        <span class="ml-3 text-[10px] text-slate-500 font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-bold">重合: {{(sim.score * 100).toFixed(1)}}%</span>
+                    </button>
+                    <div v-if="similarSectors.length === 0" class="text-sm font-medium text-slate-400 bg-slate-50 p-3 rounded-lg border border-slate-100 w-full text-center">暂无高重合度板块信息 (请确认字典有效)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp } = Vue;
+    createApp({
+        data() {
+            const data = typeof RADAR_DATA !== 'undefined' ? RADAR_DATA : [];
+            let dates = typeof AVAILABLE_DATES !== 'undefined' ? AVAILABLE_DATES : [...new Set(data.map(d => d.trade_date))];
+            dates = [...dates].sort((a, b) => b.localeCompare(a));
+            
+            return {
+                rawData: data,
+                availableDates: dates, 
+                availableDatesList: dates, 
+                selectedDate: dates[0] || '',
+                activeTab: 'Swing',
+                activeType: '概念板块',
+                selectedSectors: [], 
+                expandedCal: null, 
+                searchQuery: '',
+                showDropdown: false,
+                modalData: null,
+                modalActiveTab: 'Swing',
+                similarSectors: [],
+                sortState: {
+                    top: { key: null, order: null },
+                    bot: { key: null, order: null }
+                },
+                tabs: [
+                    { id: 'Swing', name: '波段流入率' },
+                    { id: 'Ratio', name: '单日流入率' },
+                    { id: 'Amount', name: '单日净额' }
+                ]
+            }
+        },
+        computed: {
+            currentData() { 
+                return this.rawData.filter(d => d.trade_date === this.selectedDate && d.type === this.activeType); 
+            },
+            totalPoolSize() { return this.currentData.length; },
+            topList() {
+                let list = this.currentData.filter(d => d[this.activeTab + '_RankPct'] >= 90);
+                let defKey = this.activeTab === 'Amount' ? 'Amount_Raw_BN' : this.activeTab + '_Score';
+                return this.applySort(list, 'top', defKey, 'desc'); 
+            },
+            botList() {
+                let list = this.currentData.filter(d => d[this.activeTab + '_RankPct'] <= 10);
+                let defKey = this.activeTab === 'Amount' ? 'Amount_Raw_BN' : this.activeTab + '_Score';
+                return this.applySort(list, 'bot', defKey, 'asc');
+            },
+            isAllTopSelected: {
+                get() {
+                    if (!this.topList || this.topList.length === 0) return false;
+                    return this.topList.every(item => this.selectedSectors.includes(item.index_name));
+                },
+                set(val) {
+                    let names = this.topList.map(item => item.index_name);
+                    if (val) {
+                        this.selectedSectors = Array.from(new Set([...this.selectedSectors, ...names]));
+                    } else {
+                        this.selectedSectors = this.selectedSectors.filter(n => !names.includes(n));
+                    }
+                }
+            },
+            isAllBotSelected: {
+                get() {
+                    if (!this.botList || this.botList.length === 0) return false;
+                    return this.botList.every(item => this.selectedSectors.includes(item.index_name));
+                },
+                set(val) {
+                    let names = this.botList.map(item => item.index_name);
+                    if (val) {
+                        this.selectedSectors = Array.from(new Set([...this.selectedSectors, ...names]));
+                    } else {
+                        this.selectedSectors = this.selectedSectors.filter(n => !names.includes(n));
+                    }
+                }
+            },
+            searchResults() {
+                if (!this.searchQuery.trim()) return [];
+                const q = this.searchQuery.toLowerCase();
+                const pool = this.rawData.filter(d => d.trade_date === this.selectedDate);
+                return pool.filter(d => 
+                    d.index_name.toLowerCase().includes(q) || 
+                    d.ts_code.toLowerCase().includes(q)
+                ).slice(0, 10);
+            }
+        },
+        methods: {
+            cleanName(nameWithSuffix) {
+                if (!nameWithSuffix) return '';
+                return nameWithSuffix.replace(/\s*\(.*?\)$/, '').trim();
+            },
+            hideDropdownDelay() { setTimeout(() => { this.showDropdown = false; }, 200); },
+            clearSelection() { this.selectedSectors = []; },
+            closeAllCalendars() { this.expandedCal = null; },
+            toggleCalendar(sectorName) { this.expandedCal = this.expandedCal === sectorName ? null : sectorName; },
+            getHistoricalRank(sectorName, dateStr) {
+                if (typeof RANK_HISTORY_MAP === 'undefined') return null;
+                const tabMap = RANK_HISTORY_MAP[this.activeTab];
+                if (!tabMap || !tabMap[sectorName]) return null;
+                return tabMap[sectorName][dateStr];
+            },
+            jumpToDate(dateStr) {
+                this.selectedDate = dateStr;
+                this.expandedCal = null; 
+            },
+            getHeatmapClass(rank, boardType) {
+                if (!rank) return 'heat-mid'; 
+                const total = this.totalPoolSize || 100; 
+                const pct = rank / total;
+                if (boardType === 'top') {
+                    if (rank <= 3) return 'heat-top-extreme';
+                    if (pct <= 0.10) return 'heat-top-high';
+                } else {
+                    if (total - rank <= 2) return 'heat-bot-extreme'; 
+                    if (pct >= 0.90) return 'heat-bot-high';
+                }
+                return 'heat-mid'; 
+            },
+            handleSort(board, key) {
+                let state = this.sortState[board];
+                if (state.key === key) {
+                    if (state.order === 'desc') {
+                        state.order = 'asc';
+                    } else if (state.order === 'asc') {
+                        state.key = null;
+                        state.order = null;
+                    }
+                } else {
+                    state.key = key;
+                    state.order = 'desc'; 
+                }
+            },
+            getSortIcon(board, key) {
+                let state = this.sortState[board];
+                if (state.key === key) {
+                    return state.order === 'desc' ? '<span class="text-blue-600 ml-1 font-black">▼</span>' : '<span class="text-blue-600 ml-1 font-black">▲</span>';
+                }
+                let defKey = this.activeTab === 'Amount' ? 'Amount_Raw_BN' : this.activeTab + '_Score';
+                if (!state.key && key === defKey) {
+                    let isDesc = (board === 'top');
+                    return isDesc ? '<span class="text-blue-400 ml-1">▼</span>' : '<span class="text-blue-400 ml-1">▲</span>';
+                }
+                return '<span class="text-slate-300 ml-1 opacity-30 hover:opacity-100 transition-opacity">↕</span>';
+            },
+            applySort(list, board, defaultRankKey, defaultOrder) {
+                let state = this.sortState[board];
+                if (!state.key || !state.order) {
+                    return list.sort((a, b) => {
+                        let valA = a[defaultRankKey] || 0;
+                        let valB = b[defaultRankKey] || 0;
+                        return defaultOrder === 'desc' ? valB - valA : valA - valB;
+                    });
+                }
+                return list.sort((a, b) => {
+                    let valA = a[state.key] || 0;
+                    let valB = b[state.key] || 0;
+                    return state.order === 'desc' ? valB - valA : valA - valB;
+                });
+            },
+            openModal(sectorObj) {
+                this.modalData = sectorObj;
+                this.modalActiveTab = this.activeTab;
+                this.calculateSimilarSectors(sectorObj.index_name);
+                this.showDropdown = false;
+                this.searchQuery = '';
+                if (this.activeType !== sectorObj.type) {
+                    this.activeType = sectorObj.type;
+                }
+            },
+            openModalByName(sectorNameWithSuffix) {
+                const target = this.rawData.find(d => d.trade_date === this.selectedDate && 
+                    (d.index_name === sectorNameWithSuffix || d.index_name.startsWith(sectorNameWithSuffix + ' ')));
+                if (target) this.openModal(target);
+            },
+            closeModal() { this.modalData = null; },
+            calculateSimilarSectors(sectorNameWithSuffix) {
+                if (typeof CONSTITUENT_MAP === 'undefined') {
+                    this.similarSectors = []; return;
+                }
+                const rawName = this.cleanName(sectorNameWithSuffix);
+                const targetCodes = CONSTITUENT_MAP[rawName] || CONSTITUENT_MAP[sectorNameWithSuffix];
+                if (!targetCodes || targetCodes.length === 0) {
+                    this.similarSectors = []; return;
+                }
+                const setA = new Set(targetCodes);
+                let results = [];
+                for (const [name, codes] of Object.entries(CONSTITUENT_MAP)) {
+                    if (name === rawName || name === sectorNameWithSuffix) continue;
+                    let intersection = 0;
+                    codes.forEach(c => { if (setA.has(c)) intersection++; });
+                    if (intersection === 0) continue;
+                    let union = setA.size + codes.length - intersection;
+                    results.push({ name, score: intersection / union });
+                }
+                this.similarSectors = results.sort((a, b) => b.score - a.score).slice(0, 4);
+            },
+            getChartData(sectorName, tabId) {
+                const emptyResult = { path: '', areaPath: '', linePath: '', points: [], top10Y: 16, bot10Y: 144 };
+                if (typeof RANK_HISTORY_MAP === 'undefined') return emptyResult;
+                const history = RANK_HISTORY_MAP[tabId]?.[sectorName];
+                if (!history) return emptyResult;
+                const datesAsc = [...this.availableDatesList].reverse();
+                const maxRank = this.totalPoolSize || 100; 
+                const ranks = datesAsc.map(d => history[d] || maxRank); 
+                const width = 400; 
+                const height = 160; 
+                const dx = width / (datesAsc.length - 1 || 1);
+                let pts = ranks.map((rank, i) => {
+                    let safeRank = Math.min(Math.max(rank, 1), maxRank);
+                    let y = ((safeRank - 1) / (maxRank - 1 || 1)) * height;
+                    return {x: i * dx, y: y};
+                });
+                let linePath = `M ${pts[0].x},${pts[0].y}`;
+                for (let i = 0; i < pts.length - 1; i++) {
+                    const p0 = i > 0 ? pts[i - 1] : pts[0];
+                    const p1 = pts[i];
+                    const p2 = pts[i + 1];
+                    const p3 = i !== pts.length - 2 ? pts[i + 2] : p2;
+                    const tension = 0.15; 
+                    const cp1x = p1.x + (p2.x - p0.x) * tension;
+                    const cp1y = p1.y + (p2.y - p0.y) * tension;
+                    const cp2x = p2.x - (p3.x - p1.x) * tension;
+                    const cp2y = p2.y - (p3.y - p1.y) * tension;
+                    const c1y = Math.max(0, Math.min(height, cp1y));
+                    const c2y = Math.max(0, Math.min(height, cp2y));
+                    linePath += ` C ${cp1x},${c1y} ${cp2x},${c2y} ${p2.x},${p2.y}`;
+                }
+                let areaPath = `${linePath} L ${width},${height} L 0,${height} Z`;
+                const top10Y = (Math.max(1, maxRank * 0.1) / maxRank) * height;
+                const bot10Y = (Math.max(1, maxRank * 0.9) / maxRank) * height;
+                return { linePath, areaPath, points: pts, top10Y, bot10Y };
+            },
+            exportSingleSector(sectorObj) {
+                if (typeof CONSTITUENT_MAP === 'undefined') { alert('未检测到成分字典！'); return; }
+                const rawName = this.cleanName(sectorObj.index_name);
+                const codes = CONSTITUENT_MAP[rawName] || CONSTITUENT_MAP[sectorObj.index_name] || [];
+                if (codes.length === 0) { alert(`未能找到【${rawName}】的成分股数据。`); return; }
+                let blob = new Blob([codes.join('\n')], { type: 'text/plain;charset=utf-8' });
+                let url = URL.createObjectURL(blob);
+                let link = document.createElement('a');
+                link.href = url;
+                let dateStr = this.selectedDate.replace(/-/g, '');
+                link.download = `${dateStr}_${rawName}_成分导出.txt`;
+                link.click();
+                URL.revokeObjectURL(url);
+            },
+            exportToTDX() {
+                if (this.selectedSectors.length === 0) { alert('请先勾选板块！'); return; }
+                if (typeof CONSTITUENT_MAP === 'undefined') { alert('未检测到成分字典！'); return; }
+                let codesSet = new Set();
+                this.selectedSectors.forEach(nameWithSuffix => {
+                    const rawName = this.cleanName(nameWithSuffix);
+                    const codes = CONSTITUENT_MAP[rawName] || CONSTITUENT_MAP[nameWithSuffix] || [];
+                    codes.forEach(c => codesSet.add(c));
+                });
+                if (codesSet.size === 0) { alert('未能找到成分股数据。'); return; }
+                let blob = new Blob([Array.from(codesSet).join('\n')], { type: 'text/plain;charset=utf-8' });
+                let url = URL.createObjectURL(blob);
+                let link = document.createElement('a');
+                link.href = url;
+                link.download = `${this.selectedDate.replace(/-/g, '')}_勾选导出.txt`;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
