@@ -1,0 +1,1 @@
+const DAILY_DATA = {};
