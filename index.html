@@ -989,10 +989,18 @@
             initApp();
         })
         .catch(err => {
+            const isLocalFile = location.protocol === 'file:';
             document.getElementById('loading-screen').innerHTML =
                 '<div style="color:#ef4444;font-size:1rem;">⚠️ 数据加载失败</div>' +
                 '<div style="color:#94a3b8;font-size:0.8rem;margin-top:8px;">' + err.message + '</div>' +
-                '<button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">重新加载</button>';
+                (isLocalFile
+                    ? '<div style="margin-top:16px;padding:12px 16px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca;text-align:left;max-width:420px;">' +
+                      '<div style="color:#dc2626;font-size:0.85rem;font-weight:600;margin-bottom:4px;">本地文件无法直接加载 JSON</div>' +
+                      '<div style="color:#64748b;font-size:0.78rem;">请双击项目中的 <code style="background:#e2e8f0;padding:1px 5px;border-radius:3px;">preview.command</code> 文件启动本地服务器后预览</div>' +
+                      '<div style="color:#94a3b8;font-size:0.72rem;margin-top:4px;">线上版本 onechart.top 不受影响</div>' +
+                      '</div>'
+                    : '<button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">重新加载</button>') +
+                '<button onclick="location.reload()" style="margin-top:12px;margin-left:' + (isLocalFile ? '0' : '0') + ';padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">重新加载</button>';
         });
 </script>
 </body>
