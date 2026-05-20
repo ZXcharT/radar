@@ -11,8 +11,24 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="radar_data_latest.js"></script>
     <style>
+        /* 数据加载动画 */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #f8fafc; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999;
+            font-family: 'Inter', sans-serif;
+        }
+        #loading-screen .spinner {
+            width: 48px; height: 48px; border: 4px solid #e2e8f0;
+            border-top-color: #3b82f6; border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading-screen .text { color: #64748b; font-size: 0.95rem; }
+        #loading-screen .sub { color: #94a3b8; font-size: 0.8rem; margin-top: 4px; }
+        [v-cloak] { display: none; }
+    </style>
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-font-smoothing: antialiased; }
         
         .table-head { background-color: #f1f5f9; border-bottom: 2px solid #e2e8f0; color: #475569; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.025em; }
@@ -63,6 +79,13 @@
     </style>
 </head>
 <body class="bg-slate-100 pb-20 md:pb-16">
+
+<!-- 数据加载中遮罩 -->
+<div id="loading-screen">
+    <div class="spinner"></div>
+    <div class="text">板块资金雷达数据加载中...</div>
+    <div class="sub">首次加载约需数秒，请耐心等待</div>
+</div>
 
 <div id="app" v-cloak class="p-2 md:p-4 lg:p-6 max-w-[1800px] mx-auto relative">
     
@@ -570,8 +593,11 @@
 </div>
 
 <script>
+    // 异步加载数据，不阻塞页面渲染
     const { createApp } = Vue;
-    createApp({
+    
+    function initApp() {
+        createApp({
         data() {
             const data = typeof RADAR_DATA !== 'undefined' ? RADAR_DATA : [];
             let dates = typeof AVAILABLE_DATES !== 'undefined' ? AVAILABLE_DATES : [...new Set(data.map(d => d.trade_date))];
@@ -943,6 +969,31 @@
             }
         }
     }).mount('#app');
+    }
+
+    // 异步加载 JSON 数据，不阻塞页面渲染
+    fetch('radar_data_latest.json')
+        .then(res => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(data => {
+            window.RADAR_DATA = data.RADAR_DATA;
+            window.AVAILABLE_DATES = data.AVAILABLE_DATES;
+            window.LATEST_DATE = data.LATEST_DATE;
+            window.RANK_HISTORY_MAP = data.RANK_HISTORY_MAP;
+            window.CONSTITUENT_MAP = data.CONSTITUENT_MAP;
+
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('app').style.display = '';
+            initApp();
+        })
+        .catch(err => {
+            document.getElementById('loading-screen').innerHTML =
+                '<div style="color:#ef4444;font-size:1rem;">⚠️ 数据加载失败</div>' +
+                '<div style="color:#94a3b8;font-size:0.8rem;margin-top:8px;">' + err.message + '</div>' +
+                '<button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">重新加载</button>';
+        });
 </script>
 </body>
 </html>
