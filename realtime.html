@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>盘中实时板块资金流 | OneChart</title>
+    <style>
+        :root {
+            --brand-yellow: #f59e0b;
+            --brand-yellow-light: #fef3c7;
+            --brand-yellow-bg: #fffbeb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --up: #ef4444;
+            --down: #22c55e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            padding: 1rem;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* Header */
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.75rem 1rem; margin-bottom: 1rem;
+            background: var(--card-bg); border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .header-left { display: flex; align-items: center; gap: 0.75rem; }
+        .logo {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--brand-yellow), #d97706);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 900; font-size: 0.9rem;
+        }
+        .title { font-weight: 700; font-size: 1.1rem; }
+        .subtitle { font-size: 0.75rem; color: var(--text-muted); }
+        .live-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--down); 
+            animation: pulse 2s infinite;
+            display: inline-block; margin-right: 4px;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .live-badge {
+            font-size: 0.7rem; font-weight: 600; color: var(--down);
+            display: flex; align-items: center; gap: 4px;
+        }
+        .refresh-btn {
+            padding: 6px 14px; border: 1px solid var(--border);
+            border-radius: 8px; background: var(--card-bg);
+            font-size: 0.8rem; cursor: pointer; font-weight: 500;
+            transition: all 0.15s;
+        }
+        .refresh-btn:hover { background: var(--brand-yellow-light); border-color: var(--brand-yellow); }
+
+        /* Summary Bar */
+        .summary-bar {
+            display: flex; gap: 1rem; margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .summary-card {
+            flex: 1; min-width: 140px;
+            background: var(--card-bg); border-radius: 10px;
+            border: 1px solid var(--border); padding: 0.75rem 1rem;
+        }
+        .summary-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+        .summary-value { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
+
+        /* Table */
+        .table-wrap {
+            background: var(--card-bg); border-radius: 12px;
+            border: 1px solid var(--border); overflow-x: auto;
+        }
+        table {
+            width: 100%; border-collapse: collapse; font-size: 0.85rem;
+        }
+        thead th {
+            background: var(--brand-yellow-light);
+            color: #92400e; font-weight: 700; font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 0.03em;
+            padding: 10px 12px; text-align: right; border-bottom: 2px solid var(--brand-yellow);
+            cursor: pointer; user-select: none; white-space: nowrap;
+        }
+        thead th:first-child, thead th:nth-child(3) { text-align: center; }
+        thead th.sort-asc::after { content: ' ▲'; font-size: 0.6rem; }
+        thead th.sort-desc::after { content: ' ▼'; font-size: 0.6rem; }
+        tbody td {
+            padding: 8px 12px; border-bottom: 1px solid #f1f5f9;
+            text-align: right; white-space: nowrap;
+        }
+        tbody td:first-child { text-align: center; }
+        tbody td:nth-child(3) { text-align: center; }
+        tbody tr { transition: background 0.12s; }
+        tbody tr:hover { background: var(--brand-yellow-bg); }
+        .rank-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; border-radius: 6px;
+            font-weight: 800; font-size: 0.75rem;
+        }
+        .rank-1 { background: #fef3c7; color: #92400e; border: 2px solid #f59e0b; }
+        .rank-2 { background: #f1f5f9; color: #64748b; border: 2px solid #cbd5e1; }
+        .rank-3 { background: #fdf2f8; color: #9d174d; border: 2px solid #f9a8d4; }
+        .rank-n { background: #f8fafc; color: #94a3b8; }
+        .sector-name {
+            font-weight: 600; color: var(--text); text-align: left !important;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .sector-code { font-size: 0.65rem; color: var(--text-muted); font-weight: 400; }
+        .up { color: var(--up); font-weight: 700; }
+        .down { color: var(--down); font-weight: 700; }
+
+        /* Footer */
+        .footer {
+            margin-top: 0.75rem; text-align: center;
+            font-size: 0.7rem; color: var(--text-muted);
+        }
+        .footer a { color: var(--brand-yellow); text-decoration: none; }
+
+        /* States */
+        .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
+        .loading .spinner {
+            width: 32px; height: 32px; border: 3px solid #e2e8f0;
+            border-top-color: var(--brand-yellow); border-radius: 50%;
+            animation: spin 0.7s linear infinite; margin: 0 auto 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error { text-align: center; padding: 3rem; color: #ef4444; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .header, .footer, .refresh-btn, .summary-bar { display: none; }
+            .table-wrap { border: none; }
+        }
+        @media (max-width: 640px) {
+            body { padding: 0.5rem; }
+            .summary-card { min-width: 100px; }
+            table { font-size: 0.78rem; }
+            thead th, tbody td { padding: 6px 8px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">OC</div>
+            <div>
+                <div class="title">盘中实时板块资金流</div>
+                <div class="subtitle" id="subtitle">数据加载中...</div>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <span class="live-badge"><span class="live-dot"></span> 实时</span>
+            <button class="refresh-btn" onclick="location.reload()">↻ 刷新</button>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-bar" id="summary" style="display:none;"></div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>正在拉取实时板块数据...</div>
+        </div>
+        <div class="error" id="error" style="display:none;">
+            ⚠ 数据加载失败，请确保已启用 <b>Chrome安全DNS</b>（1.1.1.1）
+            <div style="margin-top:8px;font-size:0.8rem;color:var(--text-muted)">盘中数据需待次日开盘后更新</div>
+        </div>
+        <table id="table" style="display:none;">
+            <thead>
+                <tr>
+                    <th data-sort="rank" style="width:50px">排名</th>
+                    <th data-sort="name" style="text-align:left;">板块</th>
+                    <th data-sort="code" style="width:70px">代码</th>
+                    <th data-sort="price" style="width:90px">指数</th>
+                    <th data-sort="chg" style="width:80px">涨幅%</th>
+                    <th data-sort="net_flow" style="width:120px">主力净额</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        数据来源：<a href="https://www.tdx.com.cn/" target="_blank">通达信TDX</a> ｜ 
+        盘中每 5 分钟自动更新 ｜ 
+        <a href="https://onechart.top/" target="_blank">OneChart 板块资金雷达</a>
+    </div>
+</div>
+
+<script>
+(async function() {
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const table = document.getElementById('table');
+    const tbody = document.getElementById('tbody');
+    const summary = document.getElementById('summary');
+    const subtitle = document.getElementById('subtitle');
+
+    function fmtAmount(n) {
+        if (!n) return '-';
+        const abs = Math.abs(n);
+        if (abs >= 1e8) return (n / 1e8).toFixed(2) + ' 亿';
+        if (abs >= 1e4) return (n / 1e4).toFixed(2) + ' 万';
+        return n.toFixed(0);
+    }
+
+    function rankClass(r) {
+        if (r === 1) return 'rank-1';
+        if (r === 2) return 'rank-2';
+        if (r === 3) return 'rank-3';
+        return 'rank-n';
+    }
+
+    function renderSectors(sectors) {
+        tbody.innerHTML = '';
+        if (!sectors || sectors.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">暂无数据</td></tr>';
+            return;
+        }
+        let totalFlow = 0;
+        let topGainer = null;
+        sectors.forEach(s => {
+            totalFlow += s.net_flow || 0;
+            if (!topGainer || (s.chg || 0) > (topGainer.chg || 0)) topGainer = s;
+            const flowCls = (s.net_flow > 0) ? 'up' : 'down';
+            const chgCls = (s.chg > 0) ? 'up' : 'down';
+            tbody.innerHTML += `
+                <tr>
+                    <td><span class="rank-badge ${rankClass(s.rank)}">${s.rank}</span></td>
+                    <td class="sector-name">${s.name}</td>
+                    <td><span class="sector-code">${s.code}</span></td>
+                    <td>${s.price ? s.price.toLocaleString('zh-CN', {minimumFractionDigits:2}) : '-'}</td>
+                    <td class="${chgCls}">${s.chg != null ? (s.chg > 0 ? '+' : '') + s.chg.toFixed(2) + '%' : '-'}</td>
+                    <td class="${flowCls}">${s.net_flow ? (s.net_flow > 0 ? '+' : '') + fmtAmount(s.net_flow) : '-'}</td>
+                </tr>`;
+        });
+        return { totalFlow, topGainer, count: sectors.length };
+    }
+
+    function renderSummary(totalFlow, topGainer, count) {
+        summary.innerHTML = `
+            <div class="summary-card">
+                <div class="summary-label">跟踪板块</div>
+                <div class="summary-value">${count}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">主力净额合计</div>
+                <div class="summary-value" style="color:${totalFlow > 0 ? 'var(--up)' : 'var(--down)'}">${fmtAmount(totalFlow)}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">涨幅最大</div>
+                <div class="summary-value" style="font-size:0.95rem;">${topGainer ? topGainer.name + ' <span style="color:var(--up);">+' + topGainer.chg.toFixed(2) + '%</span>' : '-'}</div>
+            </div>
+        `;
+    }
+
+    // Sort state
+    let sortCol = 'rank';
+    let sortDir = 'asc';
+
+    function sortSectors(sectors, col, dir) {
+        return [...sectors].sort((a, b) => {
+            let va = a[col], vb = b[col];
+            if (col === 'name') { va = a.name || ''; vb = b.name || ''; }
+            if (typeof va === 'string') va = va.localeCompare(vb, 'zh');
+            else va = (va || 0) - (vb || 0);
+            return dir === 'asc' ? va : -va;
+        });
+    }
+
+    document.querySelectorAll('thead th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const col = th.dataset.sort;
+            if (sortCol === col) {
+                sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortCol = col;
+                sortDir = 'asc';
+            }
+            document.querySelectorAll('thead th').forEach(h => h.className = '');
+            th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+            const sectors = window._sectors || [];
+            const sorted = sortSectors(sectors, sortCol, sortDir);
+            renderSectors(sorted);
+        });
+    });
+
+    // --- 本地测试：内嵌数据；部署后改为 fetch('realtime_flow.json') ---
+    const SAMPLE_DATA = {"updated":"2026-06-03 20:54","source":"通达信TDX","sectors":[{"rank":1,"code":"880656","name":"CPO概念","price":6857.58,"chg":2.35,"net_flow":10737354752},{"rank":2,"code":"880670","name":"光通信","price":3174.44,"chg":3.13,"net_flow":9039827968},{"rank":3,"code":"880635","name":"先进封装","price":2600.97,"chg":1.24,"net_flow":7433082368},{"rank":4,"code":"880608","name":"第三代半导体","price":1965.91,"chg":2.04,"net_flow":6479044096},{"rank":5,"code":"880672","name":"存储芯片","price":3008.32,"chg":1.88,"net_flow":5829847552},{"rank":6,"code":"880966","name":"消费电子概念","price":2790.94,"chg":0.40,"net_flow":5682416128},{"rank":7,"code":"880952","name":"芯片","price":3252.96,"chg":1.14,"net_flow":4565165568},{"rank":8,"code":"880758","name":"汽车芯片","price":1303.25,"chg":1.62,"net_flow":4270734848},{"rank":9,"code":"880945","name":"OLED概念","price":2803.68,"chg":0.88,"net_flow":4118080768},{"rank":10,"code":"880682","name":"华为海思","price":1977.88,"chg":1.03,"net_flow":3873975552},{"rank":11,"code":"880561","name":"折叠屏","price":2754.56,"chg":0.41,"net_flow":3278345472},{"rank":12,"code":"880736","name":"工业母机","price":2026.40,"chg":0.22,"net_flow":2896190976},{"rank":13,"code":"880589","name":"智能穿戴","price":3386.61,"chg":0.26,"net_flow":2845731840},{"rank":14,"code":"880944","name":"无人驾驶","price":3017.19,"chg":0.05,"net_flow":2821598464},{"rank":15,"code":"880965","name":"超清视频","price":2457.58,"chg":-0.23,"net_flow":2705128192}]};
+    // 部署后取消注释下面这段，删除 SAMPLE_DATA:
+    // const resp = await fetch('realtime_flow.json?' + Date.now());
+    // if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    // const data = await resp.json();
+    
+    const data = SAMPLE_DATA; // 部署后改为从 fetch 获取
+    window._sectors = data.sectors || [];
+    renderSectors(window._sectors);
+    const stats = renderSectors(window._sectors);
+    if (stats) {
+        renderSummary(stats.totalFlow, stats.topGainer, stats.count);
+        summary.style.display = 'flex';
+    }
+    subtitle.textContent = '更新于 ' + (data.updated || '--') + ' ｜ 来源：' + (data.source || 'TDX');
+    loading.style.display = 'none';
+    table.style.display = '';
+    error.style.display = 'none';
+
+    // Auto-refresh every 5 minutes
+    setTimeout(() => location.reload(), 5 * 60 * 1000);
+})();
+</script>
+</body>
+</html>
