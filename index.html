@@ -608,7 +608,13 @@
             dates = [...dates].sort((a, b) => b.localeCompare(a));
             
             return {
-                rawData: data,
+                recordsByDate: (window._initialRecordsByDate || {}),
+                loadingPromises: {},
+                rankHistoryMap: (window.RANK_HISTORY_MAP || null),
+                constituentMap: (window.CONSTITUENT_MAP || null),
+                rankHistoryPromise: null,
+                constituentPromise: null,
+                dateRequestToken: 0,
                 availableDates: dates, 
                 availableDatesList: dates, 
                 selectedDate: dates[0] || '',
@@ -637,30 +643,66 @@
                 ]
             }
         },
+        watch: {
+            selectedDate(newDate, oldDate) {
+                if (!newDate || newDate === oldDate) return;
+                var token = ++this.dateRequestToken;
+                this.loadDateRecords(newDate).then(function() {
+                    if (token !== this.dateRequestToken) return;
+                }.bind(this)).catch(function() {
+                    return this.useLegacyFallback();
+                }.bind(this));
+            },
+            rankChangeDays(value) {
+                if (value > 3) {
+                    this.ensureRankHistory().catch(function() {
+                        return this.useLegacyFallback();
+                    }.bind(this));
+                }
+            }
+        },
         computed: {
-            currentData() { 
-                return this.rawData.filter(d => d.trade_date === this.selectedDate && d.type === this.activeType); 
+            rawData() {
+                return Object.keys(this.recordsByDate).reduce(function(all, date) {
+                    return all.concat(this.recordsByDate[date] || []);
+                }.bind(this), []);
+            },
+            currentData() {
+                return (this.recordsByDate[this.selectedDate] || []).filter(function(d) {
+                    return d.type === this.activeType;
+                }.bind(this));
             },
             totalPoolSize() { return this.currentData.length; },
             
             processedData() {
-                const targetDateIndex = this.availableDatesList.indexOf(this.selectedDate);
-                let pastDateIndex = targetDateIndex + this.rankChangeDays;
+                if (this.rankChangeDays >= 1 && this.rankChangeDays <= 3) {
+                    var suffix = '_Rank_Chg_' + this.rankChangeDays + 'd';
+                    return this.currentData.map(function(item) {
+                        var chg = {};
+                        ['Swing', 'Ratio', 'Amount'].forEach(function(metric) {
+                            var key = metric + suffix;
+                            chg[metric + '_Rank_Chg'] = (item[key] !== undefined) ? item[key] : 0;
+                        });
+                        return Object.assign({}, item, chg);
+                    });
+                }
+                var targetDateIndex = this.availableDatesList.indexOf(this.selectedDate);
+                var pastDateIndex = targetDateIndex + this.rankChangeDays;
                 if (pastDateIndex >= this.availableDatesList.length) pastDateIndex = this.availableDatesList.length - 1;
-                const pastDateStr = this.availableDatesList[pastDateIndex];
-
-                return this.currentData.map(item => {
-                    const chg = {};
-                    ['Swing', 'Ratio', 'Amount'].forEach(metric => {
-                        const pastRank = this.getHistoricalRankByMetric(item.index_name, pastDateStr, metric);
-                        const currRank = item[metric + '_RankPos'];
+                var pastDateStr = this.availableDatesList[pastDateIndex];
+                var self = this;
+                return this.currentData.map(function(item) {
+                    var chg = {};
+                    ['Swing', 'Ratio', 'Amount'].forEach(function(metric) {
+                        var pastRank = self.getHistoricalRankByMetric(item.index_name, pastDateStr, metric);
+                        var currRank = item[metric + '_RankPos'];
                         if (pastRank && currRank) {
                             chg[metric + '_Rank_Chg'] = pastRank - currRank;
                         } else {
                             chg[metric + '_Rank_Chg'] = 0;
                         }
                     });
-                    return { ...item, ...chg };
+                    return Object.assign({}, item, chg);
                 });
             },
 
@@ -688,15 +730,13 @@
                 let defKey = this.activeTab === 'Amount' ? 'Amount_Raw_BN' : this.activeTab + '_Score';
                 return this.applySort(list, 'bot', defKey, 'asc');
             },
-            
             currentModalData() {
                 if (!this.modalData) return null;
                 if (!this.chartSelectedDate) return this.modalData;
-                
-                const histData = this.rawData.find(d => 
-                    d.index_name === this.modalData.index_name && 
-                    d.trade_date === this.chartSelectedDate
-                );
+                var records = this.recordsByDate[this.chartSelectedDate] || [];
+                var histData = records.find(function(d) {
+                    return d.index_name === this.modalData.index_name;
+                }.bind(this));
                 return histData || this.modalData;
             },
 
@@ -746,19 +786,35 @@
             hideDropdownDelay() { setTimeout(() => { this.showDropdown = false; }, 200); },
             clearSelection() { this.selectedSectors = []; },
             closeAllCalendars() { this.expandedCal = null; },
-            toggleCalendar(sectorName) { this.expandedCal = this.expandedCal === sectorName ? null : sectorName; },
-            
-            toggleChartDate(dateStr) {
+            async toggleCalendar(sectorName) {
+                if (this.expandedCal === sectorName) {
+                    this.expandedCal = null;
+                    return;
+                }
+                try {
+                    await this.ensureRankHistory();
+                    this.expandedCal = sectorName;
+                } catch (err) {
+                    await this.useLegacyFallback();
+                    this.expandedCal = sectorName;
+                }
+            },
+            async toggleChartDate(dateStr) {
                 if (this.chartSelectedDate === dateStr) {
                     this.chartSelectedDate = null;
-                } else {
+                    return;
+                }
+                try {
+                    await this.loadDateRecords(dateStr);
+                    this.chartSelectedDate = dateStr;
+                } catch (err) {
+                    await this.useLegacyFallback();
                     this.chartSelectedDate = dateStr;
                 }
             },
 
             getHistoricalRankByMetric(sectorName, dateStr, metric) {
-                if (typeof RANK_HISTORY_MAP === 'undefined') return null;
-                const tabMap = RANK_HISTORY_MAP[metric];
+                var tabMap = this.rankHistoryMap && this.rankHistoryMap[metric];
                 if (!tabMap || !tabMap[sectorName]) return null;
                 return tabMap[sectorName][dateStr];
             },
@@ -825,16 +881,19 @@
                     return state.order === 'desc' ? valB - valA : valA - valB;
                 });
             },
-            openModal(sectorObj) {
+            async openModal(sectorObj) {
                 this.modalData = sectorObj;
                 this.modalActiveTab = this.activeTab === 'RankChange' ? this.rankChangeMetric : this.activeTab;
-                this.chartSelectedDate = null; 
-                this.calculateSimilarSectors(sectorObj.index_name);
+                this.chartSelectedDate = null;
                 this.showDropdown = false;
                 this.searchQuery = '';
-                if (this.activeType !== sectorObj.type) {
-                    this.activeType = sectorObj.type;
+                if (this.activeType !== sectorObj.type) this.activeType = sectorObj.type;
+                try {
+                    await Promise.all([this.ensureRankHistory(), this.ensureConstituents()]);
+                } catch (err) {
+                    await this.useLegacyFallback();
                 }
+                this.calculateSimilarSectors(sectorObj.index_name);
             },
             openModalByName(sectorNameWithSuffix) {
                 const target = this.rawData.find(d => d.trade_date === this.selectedDate && 
@@ -842,18 +901,84 @@
                 if (target) this.openModal(target);
             },
             closeModal() { this.modalData = null; },
+            loadDateRecords(dateStr) {
+                if (this.recordsByDate[dateStr]) return Promise.resolve(this.recordsByDate[dateStr]);
+                if (this.loadingPromises[dateStr]) return this.loadingPromises[dateStr];
+                var manifest = window._manifest;
+                var path = manifest && manifest.files && manifest.files.dates && manifest.files.dates[dateStr];
+                if (!path) return Promise.reject(new Error('Missing date shard: ' + dateStr));
+                var self = this;
+                var request = fetchJson(path, function(data) {
+                    return Array.isArray(data) && data.length > 0 && data.every(function(record) {
+                        return record && record.trade_date === dateStr;
+                    });
+                }).then(function(records) {
+                    self.recordsByDate[dateStr] = records;
+                    return records;
+                }).finally(function() {
+                    delete self.loadingPromises[dateStr];
+                });
+                this.loadingPromises[dateStr] = request;
+                return request;
+            },
+            ensureRankHistory() {
+                if (this.rankHistoryMap) return Promise.resolve(this.rankHistoryMap);
+                if (this.rankHistoryPromise) return this.rankHistoryPromise;
+                var manifest = window._manifest;
+                var path = manifest && manifest.files && manifest.files.rank_history;
+                if (!path) return Promise.reject(new Error('Missing rank history shard'));
+                var self = this;
+                this.rankHistoryPromise = fetchJson(path, function(data) {
+                    return data && typeof data === 'object' && !Array.isArray(data);
+                }).then(function(data) {
+                    self.rankHistoryMap = data;
+                    window.RANK_HISTORY_MAP = data;
+                    return data;
+                }).finally(function() { self.rankHistoryPromise = null; });
+                return this.rankHistoryPromise;
+            },
+            ensureConstituents() {
+                if (this.constituentMap) return Promise.resolve(this.constituentMap);
+                if (this.constituentPromise) return this.constituentPromise;
+                var manifest = window._manifest;
+                var path = manifest && manifest.files && manifest.files.constituents;
+                if (!path) return Promise.reject(new Error('Missing constituents shard'));
+                var self = this;
+                this.constituentPromise = fetchJson(path, function(data) {
+                    return data && typeof data === 'object' && !Array.isArray(data);
+                }).then(function(data) {
+                    self.constituentMap = data;
+                    window.CONSTITUENT_MAP = data;
+                    return data;
+                }).finally(function() { self.constituentPromise = null; });
+                return this.constituentPromise;
+            },
+            async useLegacyFallback() {
+                var data = await requestLegacyFallback();
+                this.recordsByDate = groupRecordsByDate(data.RADAR_DATA);
+                this.rankHistoryMap = data.RANK_HISTORY_MAP;
+                this.constituentMap = data.CONSTITUENT_MAP;
+                this.availableDates = data.AVAILABLE_DATES.slice().sort(function(a, b) { return b.localeCompare(a); });
+                this.availableDatesList = this.availableDates;
+                this.isLocalData = (data.DATA_SOURCE || '') === 'local';
+                if (!this.selectedDate || !this.recordsByDate[this.selectedDate]) {
+                    this.selectedDate = data.LATEST_DATE;
+                }
+                return data;
+            },
             calculateSimilarSectors(sectorNameWithSuffix) {
-                if (typeof CONSTITUENT_MAP === 'undefined') {
-                    this.similarSectors = []; return;
+                if (!this.constituentMap) {
+                    this.similarSectors = [];
+                    return;
                 }
                 const rawName = this.cleanName(sectorNameWithSuffix);
-                const targetCodes = CONSTITUENT_MAP[rawName] || CONSTITUENT_MAP[sectorNameWithSuffix];
+                const targetCodes = this.constituentMap[rawName] || this.constituentMap[sectorNameWithSuffix];
                 if (!targetCodes || targetCodes.length === 0) {
                     this.similarSectors = []; return;
                 }
                 const setA = new Set(targetCodes);
                 let results = [];
-                for (const [name, codes] of Object.entries(CONSTITUENT_MAP)) {
+                for (const [name, codes] of Object.entries(this.constituentMap)) {
                     if (name === rawName || name === sectorNameWithSuffix) continue;
                     let intersection = 0;
                     codes.forEach(c => { if (setA.has(c)) intersection++; });
@@ -866,8 +991,8 @@
             
             getChartData(sectorName, tabId) {
                 const emptyResult = { path: '', areaPath: '', linePath: '', points: [], top10Y: 16, bot10Y: 144 };
-                if (typeof RANK_HISTORY_MAP === 'undefined') return emptyResult;
-                const history = RANK_HISTORY_MAP[tabId]?.[sectorName];
+                if (!this.rankHistoryMap) return emptyResult;
+                const history = this.rankHistoryMap[tabId]?.[sectorName];
                 if (!history) return emptyResult;
                 const datesAsc = [...this.availableDatesList].reverse();
                 const maxRank = this.totalPoolSize || 100; 
@@ -903,10 +1028,11 @@
                 return { linePath, areaPath, points: pts };
             },
             
-            copySingleSector(sectorObj) {
-                if (typeof CONSTITUENT_MAP === 'undefined') { alert('未检测到成分字典！'); return; }
+            async copySingleSector(sectorObj) {
+                try { await this.ensureConstituents(); } catch (err) { await this.useLegacyFallback(); }
+                if (!this.constituentMap) { alert('成分数据加载失败，请重试。'); return; }
                 const rawName = this.cleanName(sectorObj.index_name);
-                const codes = CONSTITUENT_MAP[rawName] || CONSTITUENT_MAP[sectorObj.index_name] || [];
+                const codes = this.constituentMap[rawName] || this.constituentMap[sectorObj.index_name] || [];
                 if (codes.length === 0) { alert(`未能找到【${rawName}】的成分股数据。`); return; }
                 
                 if (navigator.clipboard && window.isSecureContext) {
@@ -940,10 +1066,11 @@
                 document.body.removeChild(textArea);
             },
 
-            exportSingleSector(sectorObj) {
-                if (typeof CONSTITUENT_MAP === 'undefined') { alert('未检测到成分字典！'); return; }
+            async exportSingleSector(sectorObj) {
+                try { await this.ensureConstituents(); } catch (err) { await this.useLegacyFallback(); }
+                if (!this.constituentMap) { alert('成分数据加载失败，请重试。'); return; }
                 const rawName = this.cleanName(sectorObj.index_name);
-                const codes = CONSTITUENT_MAP[rawName] || CONSTITUENT_MAP[sectorObj.index_name] || [];
+                const codes = this.constituentMap[rawName] || this.constituentMap[sectorObj.index_name] || [];
                 if (codes.length === 0) { alert(`未能找到【${rawName}】的成分股数据。`); return; }
                 let blob = new Blob([codes.join('\n')], { type: 'text/plain;charset=utf-8' });
                 let url = URL.createObjectURL(blob);
@@ -954,13 +1081,14 @@
                 link.click();
                 URL.revokeObjectURL(url);
             },
-            exportToTDX() {
+            async exportToTDX() {
                 if (this.selectedSectors.length === 0) { alert('请先勾选板块！'); return; }
-                if (typeof CONSTITUENT_MAP === 'undefined') { alert('未检测到成分字典！'); return; }
+                try { await this.ensureConstituents(); } catch (err) { await this.useLegacyFallback(); }
+                if (!this.constituentMap) { alert('成分数据加载失败，请重试。'); return; }
                 let codesSet = new Set();
                 this.selectedSectors.forEach(nameWithSuffix => {
                     const rawName = this.cleanName(nameWithSuffix);
-                    const codes = CONSTITUENT_MAP[rawName] || CONSTITUENT_MAP[nameWithSuffix] || [];
+                    const codes = this.constituentMap[rawName] || this.constituentMap[nameWithSuffix] || [];
                     codes.forEach(c => codesSet.add(c));
                 });
                 if (codesSet.size === 0) { alert('未能找到成分股数据。'); return; }
@@ -976,38 +1104,85 @@
     }).mount('#app');
     }
 
-    // 异步加载 JSON 数据，不阻塞页面渲染
-    fetch('radar_data_latest.json')
-        .then(res => {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-        })
-        .then(data => {
+    // New protocol: manifest + latest shard on first paint. Every protocol
+    // failure shares one legacy request and updates the mounted Vue state.
+    var legacyFallbackPromise = null;
+
+    function groupRecordsByDate(records) {
+        return records.reduce(function(groups, record) {
+            (groups[record.trade_date] || (groups[record.trade_date] = [])).push(record);
+            return groups;
+        }, {});
+    }
+
+    function fetchJson(path, validator) {
+        return fetch(path).then(function(response) {
+            if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + path);
+            return response.json();
+        }).then(function(data) {
+            if (validator && !validator(data)) throw new Error('Invalid JSON schema: ' + path);
+            return data;
+        });
+    }
+
+    function isLegacyPayload(data) {
+        return data && Array.isArray(data.RADAR_DATA) && data.RADAR_DATA.length > 0 &&
+            Array.isArray(data.AVAILABLE_DATES) && data.AVAILABLE_DATES.length > 0 &&
+            data.CONSTITUENT_MAP && typeof data.CONSTITUENT_MAP === 'object' && !Array.isArray(data.CONSTITUENT_MAP) &&
+            data.RANK_HISTORY_MAP && typeof data.RANK_HISTORY_MAP === 'object' && !Array.isArray(data.RANK_HISTORY_MAP) &&
+            typeof data.LATEST_DATE === 'string' && data.AVAILABLE_DATES.includes(data.LATEST_DATE);
+    }
+
+    function requestLegacyFallback() {
+        if (legacyFallbackPromise) return legacyFallbackPromise;
+        legacyFallbackPromise = fetchJson('radar_data_latest.json', isLegacyPayload).then(function(data) {
             window.RADAR_DATA = data.RADAR_DATA;
             window.AVAILABLE_DATES = data.AVAILABLE_DATES;
             window.LATEST_DATE = data.LATEST_DATE;
             window.RANK_HISTORY_MAP = data.RANK_HISTORY_MAP;
             window.CONSTITUENT_MAP = data.CONSTITUENT_MAP;
             window.DATA_SOURCE = data.DATA_SOURCE || '';
+            return data;
+        });
+        return legacyFallbackPromise;
+    }
 
+    function showLoadFailure(error) {
+        document.getElementById('loading-screen').innerHTML =
+            '<div style="color:#ef4444;font-size:1rem;">数据加载失败</div>' +
+            '<div style="color:#94a3b8;font-size:0.8rem;margin-top:8px;">' + error.message + '</div>' +
+            '<button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">重新加载</button>';
+    }
+
+    fetchJson('radar_manifest.json', function(manifest) {
+        return manifest && manifest.schema_version === 1 && Array.isArray(manifest.AVAILABLE_DATES) &&
+            manifest.files && manifest.files.dates && manifest.LATEST_DATE &&
+            typeof manifest.files.dates[manifest.LATEST_DATE] === 'string';
+    }).then(function(manifest) {
+        window._manifest = manifest;
+        window.AVAILABLE_DATES = manifest.AVAILABLE_DATES;
+        window.LATEST_DATE = manifest.LATEST_DATE;
+        window.DATA_SOURCE = manifest.DATA_SOURCE || '';
+        return fetchJson(manifest.files.dates[manifest.LATEST_DATE], function(records) {
+            return Array.isArray(records) && records.length > 0 && records.every(function(record) {
+                return record && record.trade_date === manifest.LATEST_DATE;
+            });
+        });
+    }).then(function(records) {
+        window.RADAR_DATA = records;
+        window._initialRecordsByDate = {};
+        window._initialRecordsByDate[window.LATEST_DATE] = records;
+        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('app').style.display = '';
+        initApp();
+    }).catch(function(protocolError) {
+        requestLegacyFallback().then(function(data) {
+            window._initialRecordsByDate = groupRecordsByDate(data.RADAR_DATA);
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('app').style.display = '';
             initApp();
-        })
-        .catch(err => {
-            const isLocalFile = location.protocol === 'file:';
-            document.getElementById('loading-screen').innerHTML =
-                '<div style="color:#ef4444;font-size:1rem;">⚠️ 数据加载失败</div>' +
-                '<div style="color:#94a3b8;font-size:0.8rem;margin-top:8px;">' + err.message + '</div>' +
-                (isLocalFile
-                    ? '<div style="margin-top:16px;padding:12px 16px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca;text-align:left;max-width:420px;">' +
-                      '<div style="color:#dc2626;font-size:0.85rem;font-weight:600;margin-bottom:4px;">本地文件无法直接加载 JSON</div>' +
-                      '<div style="color:#64748b;font-size:0.78rem;">请双击项目中的 <code style="background:#e2e8f0;padding:1px 5px;border-radius:3px;">preview.command</code> 文件启动本地服务器后预览</div>' +
-                      '<div style="color:#94a3b8;font-size:0.72rem;margin-top:4px;">线上版本 onechart.top 不受影响</div>' +
-                      '</div>'
-                    : '<button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">重新加载</button>') +
-                '<button onclick="location.reload()" style="margin-top:12px;margin-left:' + (isLocalFile ? '0' : '0') + ';padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">重新加载</button>';
-        });
+        }).catch(showLoadFailure);
+    });
 </script>
 </body>
 </html>
