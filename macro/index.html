@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>高切低指标 | OneChart</title>
+<link rel="stylesheet" href="../assets/tailwind.5d4ecc19b1b9.css">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="assets/echarts.min.js"></script>
+</head>
+<body class="bg-slate-100 pb-20 md:pb-16">
+<div class="p-2 md:p-4 lg:p-6 max-w-[1800px] mx-auto relative">
+  <nav class="site-nav" aria-label="OneChart功能导航">
+    <div class="brand-chip" aria-label="OneChart">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Zm10 0a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V6ZM4 16a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2Zm10 0a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2Z"/></svg>
+      OneChart
+    </div>
+    <a href="../index.html" class="site-link">📊 <span class="wide-label">板块资金雷达</span><span class="short-label">资金</span></a>
+    <a href="https://simu.onechart.top" class="site-link">🕹️ <span class="wide-label">交易模拟器</span><span class="short-label">模拟</span></a>
+    <a href="https://bs.onechart.top" class="site-link">🧮 <span class="wide-label">仓位计算器</span><span class="short-label">计算</span></a>
+    <a href="./" class="site-link active" aria-current="page">🌐 <span>宏观择时</span></a>
+  </nav>
+
+  <main>
+    <section class="macro-card" aria-labelledby="crowding-tab">
+      <header class="card-header">
+        <div class="title-cluster">
+          <div class="metric-tabs" role="tablist" aria-label="宏观择时指标">
+            <button id="crowding-tab" class="metric-tab active" type="button" role="tab" aria-selected="true">高切低指标</button>
+          </div>
+          <p class="method-reference">参考国投证券同名指标，非原版算法</p>
+        </div>
+        <div class="header-date"><span>数据日期</span><strong id="as-of">--</strong></div>
+      </header>
+
+      <div class="stats" aria-label="行情离散度摘要">
+        <div class="stat-card primary-stat">
+          <div class="stat-main"><span>今日离散度</span><strong id="value">--</strong></div>
+          <p id="range-hint" class="range-hint">--</p>
+        </div>
+        <div class="stat-card percentile-card">
+          <div class="stat-main"><span>十年历史百分位</span><strong id="percentile">--</strong></div>
+          <p id="percentile-hint">高于近十年--的交易日</p>
+        </div>
+        <div class="stat-card"><div class="stat-main"><span>较昨日</span><strong id="d1">--</strong></div></div>
+        <div class="stat-card"><div class="stat-main"><span>近5日</span><strong id="d5">--</strong></div></div>
+      </div>
+
+      <section class="indicator-panel" aria-label="指标内涵">
+        <div class="meaning-copy">
+          <p><strong>指标内涵</strong><span>越高越两极，越低越趋同，极高时市场有高切低动力</span></p>
+          <p><strong>数值区间</strong><span>30—70 趋同发展 <i>|</i> 70—120 结构抱团 <i>|</i> 120+ 极致化</span></p>
+        </div>
+      </section>
+
+      <div class="chart-frame">
+        <div class="chart-toolbar" aria-label="图表显示控制">
+          <div class="value-control">
+            <div class="dual-switch" data-switch="value">
+              <span class="switch-side active" data-side="smooth">平滑</span>
+              <button id="value-toggle" class="switch-track" type="button" role="switch" aria-checked="false" aria-label="在平滑与精准数值间切换"><span class="switch-thumb"></span></button>
+              <span class="switch-side" data-side="precise">精准</span>
+            </div>
+          </div>
+          <div class="series-row">
+            <div id="series-tags" class="series-tags" aria-label="曲线选择"></div>
+          </div>
+          <div class="scale-control">
+            <span id="scale-status" class="scale-status" hidden></span>
+            <div class="dual-switch" data-switch="scale">
+              <span class="switch-side active" data-side="common">对齐</span>
+              <button id="scale-toggle" class="switch-track" type="button" role="switch" aria-checked="false" aria-label="在对齐与占满比例间切换"><span class="switch-thumb"></span></button>
+              <span class="switch-side" data-side="fill">占满</span>
+            </div>
+            <button id="restore-scale" type="button" hidden>恢复比例尺</button>
+          </div>
+        </div>
+        <span class="axis-title axis-title-left">离散度</span>
+        <div id="chart" class="chart" aria-label="行情离散度与指数累计表现图"></div>
+        <span class="axis-title axis-title-right">涨跌幅%</span>
+      </div>
+      <div class="interaction-hints" aria-label="图表操作说明">
+        <span>拖动手柄选择时间范围　双击图表恢复</span>
+        <span>点击指数曲线后上下拖动</span>
+      </div>
+
+      <section class="algorithm-note" aria-label="说明">
+        <strong>说明</strong>
+        <ol>
+          <li>1. 算法：以申万二级行业的相对收益分布衡量行情分化程度，并通过平滑处理形成离散度序列。</li>
+          <li>2. 仅供历史研究学习使用，不构成投资建议。</li>
+        </ol>
+      </section>
+    </section>
+
+    <section class="future-card" aria-labelledby="margin-factor-title">
+      <header><h2 id="margin-factor-title">两融因子</h2></header>
+      <p>更多择时指标开发中</p>
+    </section>
+  </main>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>
