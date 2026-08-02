@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>高切低指标 | OneChart</title>
-<link rel="stylesheet" href="../assets/tailwind.5d4ecc19b1b9.css">
+
 <link rel="stylesheet" href="assets/styles.css">
 <script src="assets/echarts.min.js"></script>
+<link rel="stylesheet" href="assets/dispersion-contribution.css">
 </head>
 <body class="bg-slate-100 pb-20 md:pb-16">
 <div class="p-2 md:p-4 lg:p-6 max-w-[1800px] mx-auto relative">
@@ -93,12 +94,21 @@
       </section>
     </section>
 
-    <section class="future-card" aria-labelledby="margin-factor-title">
+    
+<section id="dispersion-module" aria-label="离散度贡献模块" data-state="loading">
+  <div id="dispersion-state" role="status" aria-live="polite"></div>
+  <div id="dispersion-scope"><div class="dispersion-main"><section class="card"><h1>离散度贡献 <small>离散度衡量行业涨跌的两极分化程度：正贡献表示相对状态增强，负贡献表示相对状态减弱。</small></h1><p class="note">离散度衡量行业涨跌的两极分化程度：正贡献表示相对状态增强，负贡献表示相对状态减弱。</p><p class="privacy">行业贡献按公开归一化数据构建，支持固定90日窗口。</p><div class="legend" hidden></div><div class="meta" id="meta"></div><div class="layout"><div class="chart-pane"><svg id="plot" viewBox="0 0 1000 700"></svg><div class="timeline"><div class="timeline-title"><b>固定90日窗口</b><span id="window-caption"></span></div><div class="track-wrap"><div class="track"></div><div class="window-band" id="window-band"></div><input id="time-slider" type="range" step="1" aria-label="移动固定90日时间窗口"></div><div class="timeline-labels"><span id="history-start"></span><span id="history-end"></span></div></div></div><aside><div class="period-tabs"><button data-period="1">1日</button><button data-period="3">3日</button><button data-period="5">5日</button><button data-period="10">10日</button><button data-period="90" class="active">90日</button></div><div class="scope-title"><b id="scope-name"></b><span id="scope-note"></span></div><div class="rank-head"><span>行业</span><span id="value-head" style="text-align:right"></span></div><div class="rank-list" id="rank-list"></div></aside></div><div class="summary" id="summary"></div></section></div></div>
+  <div id="dispersion-fallback" hidden>离散度贡献暂不可用，高切低指标保持正常。</div>
+</section>
+
+<section class="future-card" aria-labelledby="margin-factor-title">
       <header><h2 id="margin-factor-title">两融因子</h2></header>
       <p>更多择时指标开发中</p>
     </section>
   </main>
 </div>
 <script src="assets/app.js"></script>
+<script src="assets/dispersion-store.js" defer></script>
+<script src="assets/dispersion-contribution.js" defer></script>
 </body>
 </html>

@@ -142,16 +142,15 @@ function buildSeries(axis){
 function tooltip(items){
   const date=items[0]?.axisValue;
   if(!date)return"";
-  const output=[formatDate(date)];
+  const output=[`<div style="margin-bottom:5px;color:#64748b;font-weight:700">${formatDate(date)}</div>`];
   for(const item of items){
     if(item.seriesName==="行情离散度"){
       output.push(`<span style="color:${CROWDING_COLOR}">●</span> 行情离散度：${finite(item.data)?Number(item.data).toFixed(2):"--"}`);
       continue;
     }
     const index=data.indices.find(candidate=>candidate.name===item.seriesName),norm=normalized(index),pos=data.dates.indexOf(date),price=index?.close[pos];
-    const growth=price>0&&norm.base?100*(price/norm.base-1):null,factor=scaleFactor(item.seriesName);
-    const scaleNote=Math.abs(factor-1)>.002?`，视觉比例 ${factor.toFixed(2)}×`:scaleMode==="fill"?"，上下占满模式":"";
-    output.push(`<span style="color:${COLORS[index.code]}">●</span> ${item.seriesName}：点位 ${price??"--"}<br/>相对稳定基准累计涨跌幅 ${growth===null?"--":signed(growth)+"%"}，基准日 ${formatDate(norm.baseDate)||"--"}${scaleNote}`);
+    const growth=price>0&&norm.base?100*(price/norm.base-1):null;
+    output.push(`<span style="color:${COLORS[index.code]}">●</span> ${item.seriesName}：区间涨跌幅 ${growth===null?"--":signed(growth)+"%"}`);
   }
   return output.join("<br/>");
 }
@@ -186,7 +185,7 @@ function draw(){
   const axis=crowdingAxisBounds();
   chart.setOption({
     animation:false,color:[CROWDING_COLOR,...chosen.map(code=>COLORS[code])],legend:{show:false},
-    grid:{left:64,right:72,top:window.innerWidth<=420?56:48,bottom:86,containLabel:false},tooltip:{trigger:"axis",confine:true,formatter:tooltip},
+    grid:{left:64,right:72,top:window.innerWidth<=420?56:48,bottom:86,containLabel:false},tooltip:{trigger:"axis",confine:true,formatter:tooltip,backgroundColor:"rgba(255,255,255,.60)",borderColor:"#d7e0ea",borderWidth:1,padding:[8,10],textStyle:{color:"#475569",fontSize:12,fontWeight:700},extraCssText:"border-radius:7px;box-shadow:0 4px 10px rgba(15,23,42,.10);backdrop-filter:blur(6px);"},
     xAxis:{type:"category",data:data.dates,boundaryGap:false,axisLabel:{color:"#697586",formatter:value=>formatDate(value)},axisLine:{lineStyle:{color:"#cfd7e2"}}},
     yAxis:[
       {type:"value",name:"",min:15,max:axis.max,axisLabel:{color:"#697586",formatter:value=>Math.round(value)===200?"200":""},axisTick:{show:false},splitLine:{lineStyle:{color:"#edf1f5"}}},
