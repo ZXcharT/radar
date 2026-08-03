@@ -25,8 +25,8 @@ window.setBarScale23=mode=>{barScale18=mode==='adaptive'?'adaptive':'absolute';d
 function persist18(){try{sessionStorage.setItem(LOCK_KEY,JSON.stringify(locks18))}catch(e){}}
 const LOCK_COLORS29=['#ad8959','#3b9eb3'];function isLocked18(code){return locks18.includes(code)}function lockColor29(code){const index=locks18.indexOf(code);return index>=0?LOCK_COLORS29[index%LOCK_COLORS29.length]:LOCK_COLORS29[0]}
 function bounds18(){if(brush){const ws=endIndex-90;return{start:ws+brush[0],end:ws+brush[1],count:brush[1]-brush[0],custom:true}}const n=Number(period);return{start:endIndex-n,end:endIndex,count:n,custom:false}}
-function oBetween(i,a,b){return DATA.oriented[i].slice(a,b+1).reduce((z,v)=>z+(Number.isFinite(v)?v:0),0)}
-function cBetween(i,a,b){return DATA.values[i].slice(a,b+1).reduce((z,v)=>z+(Number.isFinite(v)?v:0),0)}
+function oBetween(i,a,b){return DATA.oriented[i].slice(a+1,b+1).reduce((z,v)=>z+(Number.isFinite(v)?v:0),0)}
+function cBetween(i,a,b){return DATA.values[i].slice(a+1,b+1).reduce((z,v)=>z+(Number.isFinite(v)?v:0),0)}
 function oval18(i){const b=bounds18();return oBetween(i,b.start,b.end)}
 function cval18(i){const b=bounds18();return cBetween(i,b.start,b.end)}
 function return18(i){const b=bounds18(),start=DATA.levels[i][b.start],end=DATA.levels[i][b.end];return start>0?end/start-1:0}
