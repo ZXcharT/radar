@@ -71,9 +71,189 @@
         .sparkline { overflow: visible; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* OneChart radar preview — flat workspace, data-led color only. */
+        :root {
+            --oc-ground: #f3f4f6;
+            --oc-paper: #ffffff;
+            --oc-ink: #13161a;
+            --oc-text: #30363e;
+            --oc-muted: #6e7783;
+            --oc-quiet: #939aa4;
+            --oc-line: #e0e3e7;
+            --oc-line-strong: #cfd4da;
+            --oc-attack: #c94742;
+            --oc-attack-fill: #f8e9e7;
+            --oc-weak: #14715c;
+            --oc-weak-fill: #e8f3ef;
+        }
+        body.oc-radar-page { min-width: 0; overflow-x: hidden; background: var(--oc-ground); color: var(--oc-text); }
+        #app.oc-app { max-width: 1560px; margin: 0 auto; padding: 0 30px 28px; }
+        .oc-nav { height: 58px; margin: 0 -30px; padding: 0 30px; display: flex; align-items: center; border-bottom: 1px solid var(--oc-line-strong); background: var(--oc-paper); }
+        .oc-wordmark { display: flex; align-items: center; color: var(--oc-ink); font-size: 16px; font-weight: 730; letter-spacing: -0.035em; white-space: nowrap; }
+        .oc-wordmark::after { content: ""; width: 1px; height: 18px; margin-left: 22px; background: var(--oc-line-strong); }
+        .oc-nav-links { align-self: stretch; display: flex; align-items: center; gap: 26px; margin-left: 22px; overflow-x: auto; }
+        .oc-nav-link { height: 100%; display: flex; align-items: center; position: relative; color: var(--oc-muted); font-size: 12px; font-weight: 500; white-space: nowrap; }
+        .oc-nav-link:hover { color: var(--oc-ink); }
+        .oc-nav-link.is-active { color: var(--oc-ink); font-weight: 650; }
+        .oc-nav-link.is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--oc-ink); }
+        .oc-data-status { margin-left: auto; display: flex; align-items: center; gap: 7px; color: var(--oc-muted); font-size: 10px; white-space: nowrap; }
+        .oc-data-status::before { content: ""; width: 6px; height: 6px; background: #26946f; }
+        .oc-local-notice { margin: 14px 0 0; padding: 9px 12px; display: flex; align-items: center; gap: 9px; border: 1px solid #e7d7a6; background: #fffbed; color: #795d19; font-size: 12px; }
+        .oc-local-notice strong { font-size: 10px; color: #6b5219; }
+        .oc-pagehead { min-height: 94px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 22px 0 20px; }
+        .oc-title h1 { margin: 0; color: var(--oc-ink); font-size: 29px; line-height: 1.15; font-weight: 710; letter-spacing: -0.045em; }
+        .oc-title p { margin: 7px 0 0; color: var(--oc-muted); font-size: 11px; }
+        .oc-title strong { color: #4d555f; font-weight: 600; }
+        .oc-head-actions { display: flex; align-items: center; gap: 18px; }
+        .oc-observed { display: flex; align-items: baseline; gap: 8px; color: var(--oc-quiet); font-size: 9px; }
+        .oc-observed strong { color: var(--oc-ink); font-size: 12px; font-weight: 620; font-variant-numeric: tabular-nums; }
+        .oc-export { height: 36px; padding: 0 16px; border: 1px solid var(--oc-ink); border-radius: 0; background: var(--oc-ink); color: white; font-size: 11px; font-weight: 620; white-space: nowrap; }
+        .oc-export:hover { background: #2b3036; }
+        .oc-toolbar { min-height: 49px; display: flex; align-items: center; gap: 0; border-top: 1px solid var(--oc-line-strong); border-bottom: 1px solid var(--oc-line-strong); }
+        .oc-toolbar > * { min-width: 0; }
+        .oc-search-wrap { width: 225px; position: relative; flex: 0 0 225px; }
+        .oc-search { width: 100%; height: 32px; padding: 0 10px; border: 1px solid var(--oc-line-strong); border-radius: 0; background: var(--oc-paper); color: var(--oc-ink); font-size: 11px; outline: none; }
+        .oc-search:focus { border-color: var(--oc-ink); }
+        .oc-search-results { position: absolute; z-index: 50; top: calc(100% + 5px); left: 0; width: 100%; max-height: 320px; overflow-y: auto; border: 1px solid var(--oc-line-strong); background: var(--oc-paper); box-shadow: 0 12px 28px rgba(19, 22, 26, .12); }
+        .oc-search-result { width: 100%; padding: 9px 11px; display: flex; justify-content: space-between; align-items: center; border: 0; border-bottom: 1px solid #edf0f2; background: transparent; text-align: left; }
+        .oc-search-result:hover { background: #f5f6f7; }
+        .oc-search-result:last-child { border-bottom: 0; }
+        .oc-search-empty { position: absolute; z-index: 50; top: calc(100% + 5px); left: 0; width: 100%; padding: 10px 11px; border: 1px solid var(--oc-line-strong); background: var(--oc-paper); color: var(--oc-muted); font-size: 10px; }
+        .oc-search-name { color: var(--oc-ink); font-size: 11px; font-weight: 650; }
+        .oc-search-code { margin-left: 7px; color: var(--oc-quiet); font-size: 9px; }
+        .oc-search-type { color: var(--oc-muted); font-size: 9px; }
+        .oc-control-set { min-height: 31px; display: flex; align-items: center; margin-left: 18px; padding-left: 18px; border-left: 1px solid var(--oc-line); }
+        .oc-control-label { margin-right: 10px; color: var(--oc-quiet); font-size: 9px; white-space: nowrap; }
+        .oc-tab { height: 32px; padding: 0 9px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--oc-muted); font-size: 10px; white-space: nowrap; }
+        .oc-tab:hover { color: var(--oc-ink); }
+        .oc-tab.is-active { border-bottom-color: var(--oc-ink); color: var(--oc-ink); font-weight: 650; }
+        .oc-date { margin-left: auto; display: flex; align-items: center; gap: 7px; color: var(--oc-muted); font-size: 9px; }
+        .oc-date select { height: 30px; padding: 0 4px; border: 0; border-bottom: 1px solid var(--oc-line-strong); border-radius: 0; background: transparent; color: var(--oc-ink); font-size: 10px; font-weight: 620; outline: none; }
+        .oc-app-notice { margin-top: 10px; padding: 9px 11px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #e2b4b0; background: #fff7f6; color: #8e332f; font-size: 11px; }
+        .oc-app-notice button { padding: 0; border: 0; background: transparent; color: inherit; font-size: 10px; text-decoration: underline; text-underline-offset: 3px; }
+        .oc-rank-controls { margin: 12px 0 0; min-height: 42px; padding: 7px 0; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-bottom: 1px solid var(--oc-line); }
+        .oc-rank-control-group { display: flex; align-items: center; gap: 7px; }
+        .oc-rank-control-group label { color: var(--oc-muted); font-size: 10px; font-weight: 600; }
+        .oc-rank-control-group select { height: 28px; border: 0; border-bottom: 1px solid var(--oc-line-strong); border-radius: 0; background: transparent; color: var(--oc-ink); font-size: 10px; font-weight: 600; }
+        .desktop-mirror { display: none; margin-top: 18px; background: var(--oc-paper); border-top: 1px solid var(--oc-ink); border-bottom: 1px solid var(--oc-line-strong); }
+        .mirror-grid { display: grid; grid-template-columns: minmax(190px,1fr) 66px 74px 84px 46px 320px 46px 84px 74px 66px minmax(190px,1fr); align-items: stretch; }
+        .desktop-mirror.mirror-mode-amount .mirror-grid { grid-template-columns: minmax(220px,1fr) 74px 100px 0 0 320px 0 0 100px 74px minmax(220px,1fr); }
+        .desktop-mirror.mirror-mode-rankchange .mirror-grid { grid-template-columns: minmax(200px,1fr) 70px 78px 78px 0 320px 0 78px 78px 70px minmax(200px,1fr); }
+        .mirror-group-head { min-height: 54px; border-bottom: 1px solid var(--oc-line); background: #fbfbfc; }
+        .mirror-group-name { display: flex; align-items: center; gap: 9px; padding: 0 13px; }
+        .mirror-group-name.right { justify-content: flex-end; text-align: right; }
+        .mirror-group-name h2 { margin: 0; color: var(--oc-ink); font-size: 14px; font-weight: 680; letter-spacing: -0.02em; }
+        .mirror-group-name small { color: var(--oc-quiet); font-size: 8px; font-weight: 650; letter-spacing: .04em; }
+        .mirror-group-action { margin-left: auto; padding: 0; border: 0; background: transparent; color: var(--oc-muted); font-size: 10px; text-decoration: underline; text-underline-offset: 3px; }
+        .mirror-polarity { width: 5px; height: 17px; background: var(--oc-attack); }
+        .mirror-group-name.right .mirror-polarity { background: var(--oc-weak); }
+        .mirror-attack-group { grid-column: 1 / 6; }
+        .mirror-axis-head { grid-column: 6 / 7; display: flex; align-items: center; justify-content: center; border-left: 1px solid var(--oc-line); border-right: 1px solid var(--oc-line); color: var(--oc-ink); font-size: 11px; font-weight: 670; }
+        .mirror-axis-head span { display: flex; align-items: center; gap: 10px; }
+        .mirror-axis-head i { display: block; width: 22px; height: 1px; background: var(--oc-line-strong); }
+        .mirror-weak-group { grid-column: 7 / 12; }
+        .mirror-column-head { min-height: 33px; border-bottom: 1px solid var(--oc-line); background: #f7f8f9; color: #68717c; font-size: 9px; font-weight: 580; text-align: right; }
+        .mirror-column-head > div { min-width: 0; display: flex; align-items: center; justify-content: flex-end; padding: 0 8px; white-space: nowrap; }
+        .mirror-column-head > div:first-child { justify-content: flex-start; padding-left: 13px; }
+        .mirror-column-head > div:nth-child(6) { justify-content: center; padding: 0; border-left: 1px solid var(--oc-line); border-right: 1px solid var(--oc-line); color: #4d5660; font-weight: 650; }
+        .mirror-column-head > div:last-child { padding-right: 13px; }
+        .mirror-sort-button { width: 100%; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; white-space: nowrap; }
+        .mirror-column-head > div:nth-child(n+7) .mirror-sort-button { justify-content: flex-start; }
+        .mirror-primary-sort { width: 100%; height: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+        .mirror-primary-sort button { border: 0; background: transparent; color: inherit; font-size: inherit; font-weight: inherit; }
+        .mirror-primary-sort button:first-child { text-align: right; padding-right: 10px; }
+        .mirror-primary-sort button:last-child { text-align: left; padding-left: 10px; border-left: 1px solid var(--oc-line-strong); }
+        .mirror-row { min-height: 52px; border-bottom: 1px solid #e9ebee; font-size: 11px; font-variant-numeric: tabular-nums; }
+        .mirror-row:last-of-type { border-bottom: 0; }
+        .mirror-cell { min-width: 0; display: flex; align-items: center; justify-content: flex-end; padding: 0 8px; }
+        .mirror-row:hover .mirror-cell:not(.mirror-flow) { background: #fafbfc; }
+        .mirror-board { gap: 8px; }
+        .mirror-board.left { justify-content: flex-start; padding-left: 13px; }
+        .mirror-board.right { justify-content: flex-end; padding-right: 13px; text-align: right; }
+        .mirror-board input { flex: 0 0 auto; accent-color: var(--oc-ink); }
+        .mirror-rank { width: 20px; flex: 0 0 20px; color: #8d959f; font-size: 9px; }
+        .mirror-name { min-width: 0; overflow: hidden; padding: 0; border: 0; background: transparent; color: #22272d; font-size: 11px; font-weight: 650; text-align: inherit; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+        .mirror-name:hover { text-decoration: underline; text-underline-offset: 3px; }
+        .mirror-up { color: var(--oc-attack); font-weight: 620; }
+        .mirror-down { color: var(--oc-weak); font-weight: 620; }
+        .mirror-secondary { color: #505861; }
+        .mirror-calendar-button { border: 0; background: transparent; color: #4f5965; font-size: 10px; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+        .mirror-flow { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 0; border-left: 1px solid var(--oc-line); border-right: 1px solid var(--oc-line); background: #fcfcfd; }
+        .mirror-flow::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: #b9c0c8; }
+        .mirror-half { min-width: 0; display: flex; align-items: center; padding: 0 7px; }
+        .mirror-half.left { justify-content: flex-end; }
+        .mirror-half.right { justify-content: flex-start; }
+        .mirror-bar { box-sizing: border-box; width: var(--mirror-width); min-width: 0; height: 26px; display: flex; align-items: center; overflow: visible; color: inherit; font-size: 10px; font-weight: 690; white-space: nowrap; }
+        .mirror-half.left .mirror-bar { justify-content: flex-end; padding-right: 7px; background: var(--oc-attack-fill); color: var(--oc-attack); }
+        .mirror-half.right .mirror-bar { justify-content: flex-start; padding-left: 7px; background: var(--oc-weak-fill); color: var(--oc-weak); }
+        .mirror-empty { padding: 30px; color: var(--oc-muted); font-size: 12px; text-align: center; }
+        .mirror-calendar { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--oc-line); background: #f8f9fa; }
+        .mirror-calendar-panel { padding: 12px 14px; }
+        .mirror-calendar-panel + .mirror-calendar-panel { border-left: 1px solid var(--oc-line); }
+        .mirror-calendar-panel.right { grid-column: 2; border-left: 1px solid var(--oc-line); }
+        .mirror-calendar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--oc-muted); font-size: 10px; font-weight: 650; }
+        .mirror-calendar-head button { border: 0; background: transparent; color: var(--oc-muted); font-size: 10px; text-decoration: underline; }
+        .mobile-radar-only { width: 100%; min-width: 0; margin-top: 16px; }
+        .mobile-radar-only > div { min-width: 0; }
+        .oc-footer { margin-top: 20px; padding: 14px 0 0; border-top: 1px solid var(--oc-line); color: var(--oc-muted); font-size: 9px; }
+        #macro-summary a { border-radius: 0 !important; box-shadow: none !important; background: transparent !important; border-color: var(--oc-line-strong) !important; }
+        #loading-screen { background: var(--oc-ground); }
+        #loading-screen .spinner { width: 32px; height: 32px; border-width: 2px; border-color: var(--oc-line); border-top-color: var(--oc-ink); border-radius: 50%; }
+        .modal-content { border-radius: 2px; box-shadow: 0 24px 60px rgba(19, 22, 26, .24); }
+        .modal-content .rounded-xl, .modal-content .rounded-lg { border-radius: 2px !important; }
+        .modal-content .shadow-sm, .modal-content .shadow-inner { box-shadow: none !important; }
+        .modal-content [class*="-right-4"][class*="-top-4"] { display: none; }
+        @media (min-width: 1180px) {
+            .desktop-mirror { display: block; }
+            .mobile-radar-only { display: none !important; }
+        }
+        @media (max-width: 1179px) {
+            #app.oc-app { width: 100%; max-width: 100%; padding: 0 16px 24px; overflow: hidden; }
+            .oc-nav { margin: 0 -16px; padding: 0 16px; }
+            .oc-data-status { display: none; }
+            .oc-pagehead { min-height: 84px; }
+            .oc-toolbar { align-items: flex-start; flex-wrap: wrap; gap: 8px 0; padding: 8px 0; }
+            .oc-search-wrap { width: 100%; flex-basis: 100%; }
+            .oc-control-set { margin-left: 0; padding-left: 0; padding-right: 12px; border-left: 0; }
+            .oc-control-set + .oc-control-set { margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--oc-line); }
+            .oc-date { margin-left: auto; }
+            .mobile-radar-only > div { min-width: 0; border-radius: 0 !important; box-shadow: none !important; border-color: var(--oc-line-strong) !important; }
+            .mobile-radar-only .overflow-x-auto { width: 100%; max-width: 100%; min-width: 0; }
+            .mobile-radar-only > div > div:first-child { border-radius: 0 !important; background: #f7f8f9 !important; }
+            .mobile-radar-only .rank-tag { width: auto; height: auto; border: 0 !important; border-radius: 0; background: transparent !important; color: var(--oc-quiet) !important; font-size: 10px; font-weight: 560; }
+            .mobile-radar-only .w-6.h-6 { width: auto !important; height: auto !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: var(--oc-muted) !important; text-decoration: underline; text-underline-offset: 3px; }
+            .highlight-col { background: #f5f6f7; border-color: #eceff2; color: #3f4751; }
+        }
+        @media (max-width: 640px) {
+            #app.oc-app { padding: 0 12px 20px; }
+            .oc-nav { height: auto; min-height: 56px; margin: 0 -12px; padding: 10px 12px 0; align-items: flex-start; flex-direction: column; gap: 5px; }
+            .oc-wordmark::after { display: none; }
+            .oc-nav-links { width: 100%; height: 36px; margin-left: 0; gap: 20px; }
+            .oc-pagehead { min-height: 0; padding: 18px 0 14px; align-items: flex-start; flex-direction: column; gap: 12px; }
+            .oc-title h1 { font-size: 24px; }
+            .oc-head-actions { width: 100%; justify-content: space-between; }
+            .oc-export { flex: 0 0 auto; }
+            .oc-control-set { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; padding-right: 0; }
+            .oc-control-set + .oc-control-set { margin-left: 0; padding-left: 0; border-left: 0; border-top: 1px solid var(--oc-line); }
+            .oc-control-label { flex: 0 0 auto; }
+            .oc-tab { flex: 1 0 auto; }
+            .oc-date { width: 100%; min-width: 0; margin-left: 0; padding-top: 6px; justify-content: flex-start; border-top: 1px solid var(--oc-line); }
+            .oc-date select { margin-left: auto; }
+            .mobile-radar-only .rounded-full { border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; }
+            .oc-rank-controls { align-items: flex-start; flex-direction: column; }
+        }
     </style>
 </head>
-<body class="bg-slate-100 pb-20 md:pb-16">
+<body class="oc-radar-page">
+<!--
+THESIS: OneChart radar is one continuous capital-polarity workspace, not a dashboard assembled from decorated cards.
+OWN-WORLD: white data plane, graphite typography, square controls, one central metric axis, semantic red and green only as measured data.
+STORY: choose a date and metric, scan strongest and weakest sectors around the center axis, then inspect history or export constituents.
+FIRST VIEWPORT: quiet product navigation, compact controls, desktop mirrored rankings, and independent stacked lists on narrow screens.
+FORM: mirrored capital axis on desktop; card borders, colored container edges, pills, gradients, and decorative shadows are excluded.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md.
+-->
 
 <!-- 数据加载中遮罩 -->
 <div id="loading-screen">
@@ -82,111 +262,153 @@
     <div class="sub">首次加载约需数秒，请耐心等待</div>
 </div>
 
-<div id="app" v-cloak class="p-2 md:p-4 lg:p-6 max-w-[1800px] mx-auto relative">
+<div id="app" v-cloak class="oc-app relative">
     
-    <div v-if="isLocalData" class="mb-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 flex items-center gap-2 text-sm">
-        <span class="text-amber-600 font-bold text-xs bg-amber-100 px-2 py-0.5 rounded">本地聚合</span>
-        <span class="text-amber-700 text-xs md:text-sm">本日板块数据由个股本地聚合计算，涨跌幅暂不显示（"-"）</span>
+    <div v-if="isLocalData" class="oc-local-notice">
+        <strong>本地聚合</strong>
+        <span>本日板块数据由个股本地聚合计算，涨跌幅暂不显示（"-"）</span>
     </div>
     
-    <div class="mb-4 md:mb-5 px-1 md:px-2 flex items-center gap-1 overflow-x-auto whitespace-nowrap hide-scrollbar relative z-20">
-        <div class="text-[10px] font-black text-slate-400 tracking-widest uppercase mr-2 md:mr-4 flex items-center gap-1.5 bg-slate-200/50 px-2 py-1 rounded">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-            OneChart
+    <header class="oc-nav">
+        <a href="/" class="oc-wordmark">OneChart</a>
+        <nav class="oc-nav-links hide-scrollbar" aria-label="OneChart 功能导航">
+            <a href="/" class="oc-nav-link is-active">板块资金雷达</a>
+            <a href="/macro/" class="oc-nav-link">宏观择时</a>
+            <a href="https://bs.onechart.top" class="oc-nav-link">仓位计算器</a>
+            <a href="https://simu.onechart.top" class="oc-nav-link">交易模拟器</a>
+        </nav>
+        <div class="oc-data-status">数据已更新</div>
+    </header>
+    <!-- Compatibility boundary for the existing macro overlay injector. -->
+    <div class="mb-5 oc-nav-boundary" hidden></div>
+
+    <section class="oc-pagehead">
+        <div class="oc-title">
+            <h1>板块资金雷达</h1>
+            <p>By <strong>知行图表交易</strong></p>
         </div>
-        
-        <a href="/" class="px-3 md:px-4 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-full shadow-sm shadow-blue-200 transition-all flex items-center gap-1 md:gap-2">
-            📊 <span class="hidden sm:inline">板块资金雷达</span><span class="sm:hidden">资金</span>
-        </a>
-        <a href="https://simu.onechart.top" class="px-3 md:px-4 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-white rounded-full transition-all flex items-center gap-1 md:gap-2">
-            🕹️ <span class="hidden sm:inline">交易模拟器</span><span class="sm:hidden">模拟</span>
-        </a>
-        <a href="https://bs.onechart.top" class="px-3 md:px-4 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-white rounded-full transition-all flex items-center gap-1 md:gap-2">
-            🧮 <span class="hidden sm:inline">仓位计算器</span><span class="sm:hidden">计算</span>
-        </a>
-        <a href="/macro/" class="px-3 md:px-4 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-white rounded-full transition-all flex items-center gap-1 md:gap-2">
-            🌐 <span class="hidden sm:inline">宏观择时</span><span class="sm:hidden">宏观</span>
-        </a>
-    </div>
-
-    <div class="mb-5 bg-white px-3 py-3 md:px-5 md:py-3 rounded-xl shadow-sm border border-slate-200 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3 md:gap-4 relative z-30">
-        
-        <div class="flex flex-col md:flex-row items-start md:items-center gap-3 xl:pr-4 xl:border-r border-slate-200 w-full xl:w-auto">
-            <div class="flex items-center gap-2">
-                <h1 class="text-xl md:text-2xl font-black tracking-tight text-slate-800">板块资金雷达</h1>
-                <span class="text-[10px] md:text-xs font-bold text-slate-400 mt-1">By <span class="text-blue-600">知行图表交易</span></span>
-            </div>
-            
-            <div class="relative w-full md:w-64">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                </div>
-                <input v-model="searchQuery" @focus="showDropdown = true" @blur="hideDropdownDelay" type="text" placeholder="检索名称或代码..." class="block w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium transition-all">
-                
-                <div v-if="showDropdown && searchResults.length > 0" class="absolute z-50 mt-1 w-full bg-white shadow-xl rounded-lg border border-slate-200 max-h-80 overflow-y-auto">
-                    <div v-for="res in searchResults" :key="res.ts_code" @click="openModal(res)" class="px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-slate-50 last:border-0 flex justify-between items-center transition-colors">
-                        <div>
-                            <span class="font-bold text-slate-800">{{ cleanName(res.index_name) }}</span>
-                            <span class="ml-2 text-xs font-mono text-slate-400 font-medium">{{ res.ts_code }}</span>
-                        </div>
-                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" :class="res.type === '概念板块' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'">
-                            {{ res.type.replace('板块', '') }}
-                        </span>
-                    </div>
-                </div>
-            </div>
+        <div class="oc-head-actions">
+            <div class="oc-observed"><span>观察日期</span><strong>{{ selectedDate }}</strong></div>
+            <button @click="exportToTDX" class="oc-export">导出勾选 ({{ selectedSectors.length }})</button>
         </div>
+    </section>
 
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto overflow-x-auto hide-scrollbar pb-1 sm:pb-0">
-            <div class="flex bg-slate-100 p-1 rounded-lg shadow-inner border border-slate-200 w-full sm:w-auto shrink-0">
-                <button @click="activeType = '概念板块'; closeAllCalendars()" :class="activeType === '概念板块' ? 'bg-white shadow text-blue-600 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'" class="flex-1 sm:flex-none px-4 py-1.5 text-sm font-bold rounded-md transition-all">概念</button>
-                <button @click="activeType = '行业板块'; closeAllCalendars()" :class="activeType === '行业板块' ? 'bg-white shadow text-blue-600 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'" class="flex-1 sm:flex-none px-4 py-1.5 text-sm font-bold rounded-md transition-all">行业</button>
-            </div>
-
-            <div class="flex bg-slate-100 p-1 rounded-lg shadow-inner border border-slate-200 w-full sm:w-auto shrink-0">
-                <button v-for="tab in tabs" @click="activeTab = tab.id; closeAllCalendars()" 
-                        :class="activeTab === tab.id ? 'bg-white shadow text-slate-800 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'"
-                        class="flex-1 sm:flex-none px-3 md:px-4 py-1.5 text-xs md:text-sm font-bold rounded-md transition-all whitespace-nowrap">
-                    {{ tab.name }}
+    <section class="oc-toolbar" aria-label="资金雷达筛选条件">
+        <div class="oc-search-wrap">
+            <input v-model="searchQuery" @focus="showDropdown = true" @blur="hideDropdownDelay" type="text" placeholder="搜索板块名称或代码" class="oc-search">
+            <div v-if="showDropdown && searchResults.length > 0" class="oc-search-results">
+                <button v-for="res in searchResults" :key="res.ts_code" @mousedown.prevent="openModal(res)" class="oc-search-result">
+                    <span><span class="oc-search-name">{{ cleanName(res.index_name) }}</span><span class="oc-search-code">{{ res.ts_code }}</span></span>
+                    <span class="oc-search-type">{{ res.type.replace('板块', '') }}</span>
                 </button>
             </div>
+            <div v-else-if="showDropdown && searchQuery.trim()" class="oc-search-empty">未找到匹配板块</div>
         </div>
+        <div class="oc-control-set">
+            <span class="oc-control-label">类型</span>
+            <button @click="activeType = '概念板块'; closeAllCalendars()" :class="{'is-active': activeType === '概念板块'}" class="oc-tab">概念</button>
+            <button @click="activeType = '行业板块'; closeAllCalendars()" :class="{'is-active': activeType === '行业板块'}" class="oc-tab">行业</button>
+        </div>
+        <div class="oc-control-set hide-scrollbar">
+            <span class="oc-control-label">排序指标</span>
+            <button v-for="tab in tabs" @click="activeTab = tab.id; closeAllCalendars()" :class="{'is-active': activeTab === tab.id}" class="oc-tab">{{ tab.name }}</button>
+        </div>
+        <label class="oc-date"><span>日期</span><select v-model="selectedDate" @change="closeAllCalendars()"><option v-for="date in availableDates" :key="date" :value="date">{{ date }}</option></select></label>
+    </section>
 
-        <div class="flex items-center justify-between xl:justify-start gap-4 xl:pl-4 xl:border-l border-slate-200 w-full xl:w-auto pt-2 xl:pt-0 border-t border-slate-100 xl:border-none">
-            <div class="flex items-center gap-2">
-                <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">日期</span>
-                <select v-model="selectedDate" @change="closeAllCalendars()" class="text-sm md:text-base font-black text-slate-800 bg-slate-50 border border-slate-200 rounded px-2 py-1 focus:outline-none cursor-pointer">
-                    <option v-for="date in availableDates" :key="date" :value="date">{{ date }}</option>
-                </select>
-            </div>
-            <button @click="exportToTDX" class="bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm font-bold py-1.5 px-3 md:px-4 rounded-lg shadow flex items-center transition whitespace-nowrap">
-                导出勾选 ({{ selectedSectors.length }})
-            </button>
-        </div>
-    </div>
+    <div v-if="appNotice" class="oc-app-notice" role="alert"><span>{{ appNotice }}</span><button @click="appNotice = ''">关闭</button></div>
 
-    <div v-if="activeTab === 'RankChange'" class="mb-5 bg-blue-50/80 px-3 py-2 md:px-5 md:py-2.5 rounded-xl shadow-sm border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative z-10 animate-fade-in-down">
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-            <span class="text-xs font-bold text-blue-700 whitespace-nowrap">排序基准:</span>
-            <div class="flex bg-white p-0.5 rounded shadow-sm border border-blue-200 w-full sm:w-auto">
-                <button @click="rankChangeMetric = 'Swing'" :class="rankChangeMetric === 'Swing' ? 'bg-blue-600 shadow-sm text-white' : 'text-slate-500 hover:bg-slate-50'" class="flex-1 sm:flex-none px-3 py-1 text-[11px] md:text-xs font-bold rounded transition-colors">波段率</button>
-                <button @click="rankChangeMetric = 'Ratio'" :class="rankChangeMetric === 'Ratio' ? 'bg-blue-600 shadow-sm text-white' : 'text-slate-500 hover:bg-slate-50'" class="flex-1 sm:flex-none px-3 py-1 text-[11px] md:text-xs font-bold rounded transition-colors">单日率</button>
-                <button @click="rankChangeMetric = 'Amount'" :class="rankChangeMetric === 'Amount' ? 'bg-blue-600 shadow-sm text-white' : 'text-slate-500 hover:bg-slate-50'" class="flex-1 sm:flex-none px-3 py-1 text-[11px] md:text-xs font-bold rounded transition-colors">单日额</button>
-            </div>
+    <section v-if="activeTab === 'RankChange'" class="oc-rank-controls">
+        <div class="oc-rank-control-group">
+            <label>排序基准</label>
+            <button @click="rankChangeMetric = 'Swing'" :class="{'is-active': rankChangeMetric === 'Swing'}" class="oc-tab">波段率</button>
+            <button @click="rankChangeMetric = 'Ratio'" :class="{'is-active': rankChangeMetric === 'Ratio'}" class="oc-tab">单日率</button>
+            <button @click="rankChangeMetric = 'Amount'" :class="{'is-active': rankChangeMetric === 'Amount'}" class="oc-tab">单日额</button>
         </div>
-        <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-blue-700">统计天数:</span>
-            <select v-model="rankChangeDays" class="text-xs font-bold text-slate-800 bg-white border border-blue-200 rounded px-2 py-1 outline-none shadow-sm cursor-pointer hover:border-blue-300">
-                <option :value="1">近 1 天 (相比昨日)</option>
+        <div class="oc-rank-control-group">
+            <label for="rank-change-days">统计天数</label>
+            <select id="rank-change-days" v-model="rankChangeDays">
+                <option :value="1">近 1 天（相比昨日）</option>
                 <option :value="2">近 2 天</option>
                 <option :value="3">近 3 天</option>
                 <option :value="4">近 4 天</option>
                 <option :value="5">近 5 天</option>
             </select>
         </div>
-    </div>
+    </section>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 items-start">
+    <section class="desktop-mirror" :class="'mirror-mode-' + activeTab.toLowerCase()" aria-label="资金强弱镜像榜单">
+        <header class="mirror-grid mirror-group-head">
+            <div class="mirror-group-name mirror-attack-group">
+                <span class="mirror-polarity"></span>
+                <h2>{{ activeTab === 'RankChange' ? '排名飙升榜' : '资金进攻榜' }}</h2>
+                <small>TOP 10%</small>
+                <button @click="clearSelection" class="mirror-group-action">清空勾选</button>
+            </div>
+            <div class="mirror-axis-head"><span><i></i>{{ mirrorMetricLabel }}<i></i></span></div>
+            <div class="mirror-group-name right mirror-weak-group">
+                <small>BOTTOM 10%</small>
+                <h2>{{ activeTab === 'RankChange' ? '排名暴跌榜' : '资金重灾区' }}</h2>
+                <span class="mirror-polarity"></span>
+            </div>
+        </header>
+
+        <div class="mirror-grid mirror-column-head">
+            <div>板块 / 排名</div>
+            <div><button class="mirror-sort-button" @click="handleSort('top', 'pct_change')">涨跌幅 <span v-html="getSortIcon('top', 'pct_change')"></span></button></div>
+            <div v-for="aux in mirrorAuxColumns" :key="'top-head-' + aux.id"><button v-if="aux.key" class="mirror-sort-button" @click="handleSort('top', aux.topKey)">{{ aux.label }} <span v-html="getSortIcon('top', aux.topKey)"></span></button></div>
+            <div><div class="mirror-primary-sort"><button @click="handleSort('top', mirrorPrimarySortKey)">{{ mirrorDirectionLabels[0] }} <span v-html="getSortIcon('top', mirrorPrimarySortKey)"></span></button><button @click="handleSort('bot', mirrorPrimarySortKey)"><span v-html="getSortIcon('bot', mirrorPrimarySortKey)"></span> {{ mirrorDirectionLabels[1] }}</button></div></div>
+            <div v-for="aux in mirrorAuxColumnsReversed" :key="'bot-head-' + aux.id"><button v-if="aux.key" class="mirror-sort-button" @click="handleSort('bot', aux.botKey)"><span v-html="getSortIcon('bot', aux.botKey)"></span> {{ aux.label }}</button></div>
+            <div><button class="mirror-sort-button" @click="handleSort('bot', 'pct_change')"><span v-html="getSortIcon('bot', 'pct_change')"></span> 涨跌幅</button></div>
+            <div>排名 / 板块</div>
+        </div>
+
+        <div v-if="mirrorRows.length === 0" class="mirror-empty">当前条件下没有榜单数据</div>
+        <template v-for="(row, rowIndex) in mirrorRows" :key="'mirror-' + rowIndex + '-' + (row.top ? row.top.index_name : '') + '-' + (row.bot ? row.bot.index_name : '')">
+            <div class="mirror-grid mirror-row">
+                <div class="mirror-cell mirror-board left">
+                    <template v-if="row.top">
+                        <input type="checkbox" v-model="selectedSectors" :value="row.top.index_name" @click.stop aria-label="勾选板块">
+                        <span class="mirror-rank">{{ mirrorRank(row.top) }}</span>
+                        <button class="mirror-name" @click.stop="openModal(row.top)">{{ cleanName(row.top.index_name) }}</button>
+                    </template>
+                </div>
+                <div class="mirror-cell" :class="row.top ? mirrorValueClass(row.top.pct_change, {kind:'signed'}) : ''">{{ row.top ? formatPctChange(row.top.pct_change) : '' }}</div>
+                <div v-for="aux in mirrorAuxColumns" :key="'top-' + rowIndex + '-' + aux.id" class="mirror-cell">
+                    <button v-if="row.top && aux.kind === 'calendar'" class="mirror-calendar-button" @click.stop="toggleCalendar(row.top.index_name)">{{ mirrorAuxValue(row.top, aux, 'top') }}</button>
+                    <span v-else-if="row.top && aux.key" :class="mirrorValueClass(mirrorAuxRaw(row.top, aux, 'top'), aux)">{{ mirrorAuxValue(row.top, aux, 'top') }}</span>
+                </div>
+                <div class="mirror-cell mirror-flow">
+                    <div class="mirror-half left"><div v-if="row.top" class="mirror-bar" :style="mirrorBarStyle(row.top)">{{ formatMirrorMetric(row.top) }}</div></div>
+                    <div class="mirror-half right"><div v-if="row.bot" class="mirror-bar" :style="mirrorBarStyle(row.bot)">{{ formatMirrorMetric(row.bot) }}</div></div>
+                </div>
+                <div v-for="aux in mirrorAuxColumnsReversed" :key="'bot-' + rowIndex + '-' + aux.id" class="mirror-cell">
+                    <button v-if="row.bot && aux.kind === 'calendar'" class="mirror-calendar-button" @click.stop="toggleCalendar(row.bot.index_name)">{{ mirrorAuxValue(row.bot, aux, 'bot') }}</button>
+                    <span v-else-if="row.bot && aux.key" :class="mirrorValueClass(mirrorAuxRaw(row.bot, aux, 'bot'), aux)">{{ mirrorAuxValue(row.bot, aux, 'bot') }}</span>
+                </div>
+                <div class="mirror-cell" :class="row.bot ? mirrorValueClass(row.bot.pct_change, {kind:'signed'}) : ''">{{ row.bot ? formatPctChange(row.bot.pct_change) : '' }}</div>
+                <div class="mirror-cell mirror-board right">
+                    <template v-if="row.bot">
+                        <button class="mirror-name" @click.stop="openModal(row.bot)">{{ cleanName(row.bot.index_name) }}</button>
+                        <span class="mirror-rank">{{ mirrorRank(row.bot) }}</span>
+                        <input type="checkbox" v-model="selectedSectors" :value="row.bot.index_name" @click.stop aria-label="勾选板块">
+                    </template>
+                </div>
+            </div>
+            <div v-if="(row.top && expandedCal === row.top.index_name) || (row.bot && expandedCal === row.bot.index_name)" class="mirror-calendar">
+                <div v-if="row.top && expandedCal === row.top.index_name" class="mirror-calendar-panel">
+                    <div class="mirror-calendar-head"><span>【{{ cleanName(row.top.index_name) }}】近 30 交易日排名轨迹</span><button @click.stop="expandedCal = null">收起</button></div>
+                    <div class="flex flex-wrap gap-1"><div v-for="dateStr in availableDatesList" :key="dateStr" class="cal-box" :class="getHeatmapClass(getHistoricalRank(row.top.index_name, dateStr), 'top')" @click.stop="jumpToDate(dateStr)"><span class="cal-date">{{ dateStr.substring(5).replace('-', '') }}</span><span class="cal-rank">{{ getHistoricalRank(row.top.index_name, dateStr) || '-' }}</span></div></div>
+                </div>
+                <div v-if="row.bot && expandedCal === row.bot.index_name" class="mirror-calendar-panel right">
+                    <div class="mirror-calendar-head"><span>【{{ cleanName(row.bot.index_name) }}】近 30 交易日排名轨迹</span><button @click.stop="expandedCal = null">收起</button></div>
+                    <div class="flex flex-wrap gap-1"><div v-for="dateStr in availableDatesList" :key="dateStr" class="cal-box" :class="getHeatmapClass(getHistoricalRank(row.bot.index_name, dateStr), 'bot')" @click.stop="jumpToDate(dateStr)"><span class="cal-date">{{ dateStr.substring(5).replace('-', '') }}</span><span class="cal-rank">{{ getHistoricalRank(row.bot.index_name, dateStr) || '-' }}</span></div></div>
+                </div>
+            </div>
+        </template>
+    </section>
+
+    <div class="mobile-radar-only grid grid-cols-1 gap-4 md:gap-6 items-start">
         
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm relative z-0 overflow-hidden">
             <div class="p-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
@@ -248,6 +470,7 @@
                     </div>
 
                     <div class="flex flex-col">
+                        <div v-if="topList.length === 0" class="mirror-empty">当前条件下没有榜单数据</div>
                         <template v-for="item in topList" :key="item.index_name">
                             <label class="grid grid-cols-12 px-1 data-row items-stretch cursor-pointer relative" :class="{'bg-blue-50 border-l-2 border-blue-500': expandedCal === item.index_name}">
                                 <div class="col-span-1 text-center flex-center-y justify-center"><input type="checkbox" v-model="selectedSectors" :value="item.index_name" @click.stop></div>
@@ -374,6 +597,7 @@
                     </div>
 
                     <div class="flex flex-col">
+                        <div v-if="botList.length === 0" class="mirror-empty">当前条件下没有榜单数据</div>
                         <template v-for="item in botList" :key="item.index_name">
                             <label class="grid grid-cols-12 px-1 data-row items-stretch cursor-pointer relative" :class="{'bg-green-50 border-l-2 border-green-500': expandedCal === item.index_name}">
                                 <div class="col-span-1 text-center flex-center-y justify-center"><input type="checkbox" v-model="selectedSectors" :value="item.index_name" @click.stop></div>
@@ -444,7 +668,7 @@
         </div>
     </div>
     
-    <div class="mt-8 pt-6 border-t border-slate-200/60 text-center flex flex-col items-center justify-center gap-2 pb-4">
+    <div class="oc-footer text-center flex flex-col items-center justify-center gap-2 pb-4">
         <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-[10px] md:text-xs font-medium text-slate-500">
             <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg> 数据源: Tushare + 东财板块日线资金流数据</span>
             <span class="hidden md:inline text-slate-300">|</span>
@@ -634,7 +858,8 @@
                 chartSelectedDate: null, 
                 similarSectors: [],
                 rankChangeMetric: 'Swing', 
-                rankChangeDays: 1, 
+                rankChangeDays: 1,
+                appNotice: '',
                 sortState: {
                     top: { key: null, order: null },
                     bot: { key: null, order: null }
@@ -648,19 +873,32 @@
             }
         },
         watch: {
+            activeTab() {
+                this.resetSortState();
+            },
+            rankChangeMetric() {
+                this.resetSortState();
+            },
             selectedDate(newDate, oldDate) {
                 if (!newDate || newDate === oldDate) return;
                 var token = ++this.dateRequestToken;
                 this.loadDateRecords(newDate).then(function() {
                     if (token !== this.dateRequestToken) return;
+                    this.appNotice = '';
                 }.bind(this)).catch(function() {
-                    return this.useLegacyFallback();
+                    return this.useLegacyFallback().then(function() {
+                        this.appNotice = '';
+                    }.bind(this)).catch(function(error) {
+                        this.reportAppError('日期数据加载失败，请稍后重试。', error);
+                    }.bind(this));
                 }.bind(this));
             },
             rankChangeDays(value) {
                 if (value > 3) {
                     this.ensureRankHistory().catch(function() {
-                        return this.useLegacyFallback();
+                        return this.useLegacyFallback().catch(function(error) {
+                            this.reportAppError('排名历史加载失败，请稍后重试。', error);
+                        }.bind(this));
                     }.bind(this));
                 }
             }
@@ -780,12 +1018,140 @@
                     d.index_name.toLowerCase().includes(q) || 
                     d.ts_code.toLowerCase().includes(q)
                 ).slice(0, 10);
+            },
+            mirrorRows() {
+                const count = Math.max(this.topList.length, this.botList.length);
+                return Array.from({ length: count }, (_, index) => ({
+                    top: this.topList[index] || null,
+                    bot: this.botList[index] || null
+                }));
+            },
+            mirrorPrimarySortKey() {
+                if (this.activeTab === 'RankChange') return this.rankChangeMetric + '_Rank_Chg';
+                if (this.activeTab === 'Amount') return 'Amount_Raw_BN';
+                if (this.activeTab === 'Ratio') return 'Ratio_Raw_Pct';
+                return 'Swing_Ratio_Val';
+            },
+            mirrorMetricLabel() {
+                if (this.activeTab === 'RankChange') {
+                    const metric = this.tabs.find(tab => tab.id === this.rankChangeMetric);
+                    return (metric ? metric.name : '') + '排名变化';
+                }
+                const tab = this.tabs.find(item => item.id === this.activeTab);
+                return tab ? tab.name : '';
+            },
+            mirrorDirectionLabels() {
+                return this.activeTab === 'RankChange' ? ['上升', '下降'] : ['流入', '流出'];
+            },
+            mirrorScaleMax() {
+                const values = this.topList.concat(this.botList)
+                    .map(item => Math.abs(this.getMirrorMetric(item)))
+                    .filter(value => Number.isFinite(value));
+                return Math.max(...values, 0.000001);
+            },
+            mirrorAuxColumns() {
+                if (this.activeTab === 'RankChange') {
+                    const names = { Swing: '波段率', Ratio: '单日率', Amount: '单日额' };
+                    const columns = ['Swing', 'Ratio', 'Amount']
+                        .filter(metric => metric !== this.rankChangeMetric)
+                        .map(metric => ({
+                            id: 'change-' + metric,
+                            label: names[metric],
+                            key: metric + '_Rank_Chg',
+                            topKey: metric + '_Rank_Chg',
+                            botKey: metric + '_Rank_Chg',
+                            kind: 'rankChange'
+                        }));
+                    columns.push({ id: 'change-empty', label: '', key: null, topKey: null, botKey: null, kind: 'empty' });
+                    return columns;
+                }
+                if (this.activeTab === 'Amount') {
+                    return [
+                        { id: 'amount-ratio', label: '单日流入率', key: 'Ratio_Raw_Pct', topKey: 'Ratio_Raw_Pct', botKey: 'Ratio_Raw_Pct', kind: 'ratio' },
+                        { id: 'amount-empty-1', label: '', key: null, topKey: null, botKey: null, kind: 'empty' },
+                        { id: 'amount-empty-2', label: '', key: null, topKey: null, botKey: null, kind: 'empty' }
+                    ];
+                }
+                return [
+                    { id: 'score', label: '加权评分', key: this.activeTab + '_Score', topKey: this.activeTab + '_Score', botKey: this.activeTab + '_Score', kind: 'score' },
+                    { id: 'amount', label: '净额', key: 'Amount_Raw_BN', topKey: 'Amount_Raw_BN', botKey: 'Amount_Raw_BN', kind: 'amount' },
+                    { id: 'calendar', label: '在榜', key: this.activeTab + '_Top30d', topKey: this.activeTab + '_Top30d', botKey: this.activeTab + '_Bot30d', kind: 'calendar' }
+                ];
+            },
+            mirrorAuxColumnsReversed() {
+                return this.mirrorAuxColumns.slice().reverse();
             }
         },
         methods: {
             cleanName(nameWithSuffix) {
                 if (!nameWithSuffix) return '';
                 return nameWithSuffix.replace(/\s*\(.*?\)$/, '').trim();
+            },
+            getMirrorMetric(item) {
+                if (!item) return 0;
+                if (this.activeTab === 'RankChange') return Number(item[this.rankChangeMetric + '_Rank_Chg'] || 0);
+                if (this.activeTab === 'Amount') return Number(item.Amount_Raw_BN || 0);
+                if (this.activeTab === 'Ratio') return Number(item.Ratio_Raw_Pct || 0) * 100;
+                return Number(item.Swing_Ratio_Val || 0) * 100;
+            },
+            formatMirrorMetric(item) {
+                const value = this.getMirrorMetric(item);
+                if (!Number.isFinite(value)) return '-';
+                const sign = value > 0 ? '+' : value < 0 ? '−' : '';
+                const absolute = Math.abs(value);
+                if (this.activeTab === 'RankChange') return sign + absolute.toFixed(0);
+                if (this.activeTab === 'Amount') return sign + absolute.toFixed(1) + '亿';
+                return sign + absolute.toFixed(2) + '%';
+            },
+            mirrorBarStyle(item) {
+                const value = Math.abs(this.getMirrorMetric(item));
+                const ratio = this.mirrorScaleMax ? Math.min(100, value / this.mirrorScaleMax * 100) : 0;
+                return { '--mirror-width': ratio.toFixed(2) + '%' };
+            },
+            mirrorRank(item) {
+                if (!item) return '-';
+                const metric = this.activeTab === 'RankChange' ? this.rankChangeMetric : this.activeTab;
+                return item[metric + '_RankPos'] || '-';
+            },
+            formatPctChange(value) {
+                return Number.isFinite(value) ? ((value > 0 ? '+' : '') + value.toFixed(2) + '%') : '-';
+            },
+            mirrorAuxRaw(item, aux, side) {
+                if (!item || !aux || !aux.key) return null;
+                const key = side === 'bot' ? aux.botKey : aux.topKey;
+                const value = item[key];
+                return Number.isFinite(value) ? value : Number(value);
+            },
+            mirrorAuxValue(item, aux, side) {
+                const value = this.mirrorAuxRaw(item, aux, side);
+                if (!Number.isFinite(value)) return '-';
+                if (aux.kind === 'ratio') return (value * 100).toFixed(2) + '%';
+                if (aux.kind === 'amount') return value.toFixed(1) + '亿';
+                if (aux.kind === 'score') return value.toFixed(1);
+                if (aux.kind === 'calendar') return value.toFixed(0);
+                if (aux.kind === 'rankChange') {
+                    if (value > 0) return '↑ ' + value.toFixed(0);
+                    if (value < 0) return '↓ ' + Math.abs(value).toFixed(0);
+                    return '-';
+                }
+                return String(value);
+            },
+            mirrorValueClass(value, aux) {
+                if (!Number.isFinite(value)) return 'mirror-secondary';
+                if (aux && aux.kind === 'score') return 'mirror-secondary';
+                if (value > 0) return 'mirror-up';
+                if (value < 0) return 'mirror-down';
+                return 'mirror-secondary';
+            },
+            reportAppError(message, error) {
+                this.appNotice = message;
+                console.error(message, error);
+            },
+            resetSortState() {
+                this.sortState.top.key = null;
+                this.sortState.top.order = null;
+                this.sortState.bot.key = null;
+                this.sortState.bot.order = null;
             },
             hideDropdownDelay() { setTimeout(() => { this.showDropdown = false; }, 200); },
             clearSelection() { this.selectedSectors = []; },
@@ -798,9 +1164,15 @@
                 try {
                     await this.ensureRankHistory();
                     this.expandedCal = sectorName;
+                    this.appNotice = '';
                 } catch (err) {
-                    await this.useLegacyFallback();
-                    this.expandedCal = sectorName;
+                    try {
+                        await this.useLegacyFallback();
+                        this.expandedCal = sectorName;
+                        this.appNotice = '';
+                    } catch (fallbackError) {
+                        this.reportAppError('排名历史加载失败，请稍后重试。', fallbackError);
+                    }
                 }
             },
             async toggleChartDate(dateStr) {
@@ -811,9 +1183,15 @@
                 try {
                     await this.loadDateRecords(dateStr);
                     this.chartSelectedDate = dateStr;
+                    this.appNotice = '';
                 } catch (err) {
-                    await this.useLegacyFallback();
-                    this.chartSelectedDate = dateStr;
+                    try {
+                        await this.useLegacyFallback();
+                        this.chartSelectedDate = dateStr;
+                        this.appNotice = '';
+                    } catch (fallbackError) {
+                        this.reportAppError('历史日期加载失败，请稍后重试。', fallbackError);
+                    }
                 }
             },
 
@@ -894,8 +1272,14 @@
                 if (this.activeType !== sectorObj.type) this.activeType = sectorObj.type;
                 try {
                     await Promise.all([this.ensureRankHistory(), this.ensureConstituents()]);
+                    this.appNotice = '';
                 } catch (err) {
-                    await this.useLegacyFallback();
+                    try {
+                        await this.useLegacyFallback();
+                        this.appNotice = '';
+                    } catch (fallbackError) {
+                        this.reportAppError('板块详情加载失败，请稍后重试。', fallbackError);
+                    }
                 }
                 this.calculateSimilarSectors(sectorObj.index_name);
             },
@@ -1155,7 +1539,7 @@
         document.getElementById('loading-screen').innerHTML =
             '<div style="color:#ef4444;font-size:1rem;">数据加载失败</div>' +
             '<div style="color:#94a3b8;font-size:0.8rem;margin-top:8px;">' + error.message + '</div>' +
-            '<button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">重新加载</button>';
+            '<button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;background:#13161a;color:#fff;border:none;border-radius:0;cursor:pointer;font-size:0.9rem;">重新加载</button>';
     }
 
     fetchJson('radar_manifest.json', function(manifest) {
