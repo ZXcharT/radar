@@ -189,8 +189,8 @@
         ::selection { background: var(--oc-accent-fill); color: var(--oc-ink); }
         #app.oc-app { max-width: 1560px; margin: 0 auto; padding: 0 30px 28px; }
         .oc-app button:focus-visible, .oc-app a:focus-visible, .oc-app input:focus-visible, .oc-app select:focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 2px; }
-        .oc-nav { position: relative; height: 58px; margin: 0 -30px; padding: 0 30px; display: flex; align-items: center; border-bottom: 1px solid var(--oc-line-strong); background: var(--oc-paper); }
-        .oc-wordmark { display: flex; align-items: center; color: var(--oc-ink); font-size: 16px; font-weight: 730; letter-spacing: -0.035em; white-space: nowrap; }
+        .oc-nav { position: relative; height: 58px; margin: 0; padding: 0 22px; display: flex; align-items: center; border-bottom: 1px solid var(--oc-line-strong); background: var(--oc-paper); }
+        .oc-wordmark { display: flex; align-items: center; color: var(--oc-ink); font-size: 16px; line-height: 1; font-weight: 730; letter-spacing: -0.035em; white-space: nowrap; }
         .oc-wordmark::after { content: ""; width: 1px; height: 18px; margin-left: 22px; background: var(--oc-line-strong); }
         .oc-nav-links { align-self: stretch; display: flex; align-items: center; gap: 26px; margin-left: 22px; overflow-x: auto; }
         .oc-nav-link { height: 100%; display: flex; align-items: center; position: relative; color: var(--oc-muted); font-size: 12px; font-weight: 500; white-space: nowrap; }
@@ -204,9 +204,9 @@
         .oc-data-status::before { content: ""; width: 6px; height: 6px; background: #26946f; }
         .oc-local-notice { margin: 14px 0 0; padding: 9px 12px; display: flex; align-items: center; gap: 9px; border: 1px solid var(--oc-notice-border); background: var(--oc-notice-bg); color: var(--oc-notice-text); font-size: 12px; }
         .oc-local-notice strong { font-size: 10px; color: inherit; }
-        .oc-pagehead { min-height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 0 16px; }
+        .oc-pagehead { min-height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 22px 16px; }
         .oc-title { min-width: 0; display: flex; align-items: baseline; gap: 12px; }
-        .oc-title h1 { margin: 0; color: var(--oc-ink); font-size: 26px; line-height: 1.15; font-weight: 710; letter-spacing: -0.045em; white-space: nowrap; }
+        .oc-title h1 { margin: 0; color: var(--oc-ink); font-size: 26px; line-height: 1.15; font-weight: 710; letter-spacing: -0.04em; white-space: nowrap; }
         .oc-title p { margin: 0; color: var(--oc-muted); font-size: 10px; white-space: nowrap; }
         .oc-title strong { color: var(--oc-text-secondary); font-weight: 600; }
         .oc-head-actions { display: flex; align-items: center; gap: 18px; }
@@ -438,9 +438,9 @@
         }
         @media (max-width: 1179px) {
             #app.oc-app { width: 100%; max-width: 100%; padding: 0 16px 24px; overflow: hidden; }
-            .oc-nav { margin: 0 -16px; padding: 0 16px; }
+            .oc-nav { margin: 0; padding: 0 16px; }
             .oc-data-status { display: none; }
-            .oc-pagehead { min-height: 74px; }
+            .oc-pagehead { min-height: 74px; padding-right: 16px; padding-left: 16px; }
             .oc-toolbar { align-items: flex-start; flex-wrap: wrap; gap: 8px 0; padding: 8px 0; }
             .oc-search-wrap { width: 100%; flex-basis: 100%; }
             .oc-control-set { margin-left: 0; padding-left: 0; padding-right: 12px; border-left: 0; }
@@ -455,11 +455,11 @@
         }
         @media (max-width: 640px) {
             #app.oc-app { padding: 0 12px 20px; }
-            .oc-nav { height: auto; min-height: 56px; margin: 0 -12px; padding: 10px 12px 0; align-items: flex-start; flex-direction: column; gap: 5px; }
+            .oc-nav { height: auto; min-height: 56px; margin: 0; padding: 10px 14px 0; align-items: flex-start; flex-direction: column; gap: 5px; }
             .oc-wordmark::after { display: none; }
-            .oc-theme-toggle { position: absolute; top: 10px; right: 12px; margin-left: 0; }
+            .oc-theme-toggle { position: absolute; top: 10px; right: 14px; margin-left: 0; }
             .oc-nav-links { width: 100%; height: 36px; margin-left: 0; gap: 20px; }
-            .oc-pagehead { min-height: 0; padding: 16px 0 14px; align-items: flex-start; flex-direction: column; gap: 10px; }
+            .oc-pagehead { min-height: 0; padding: 16px 14px 14px; align-items: flex-start; flex-direction: column; gap: 10px; }
             .oc-title { flex-wrap: wrap; gap: 5px 10px; }
             .oc-title h1 { font-size: 23px; }
             .oc-title p { font-size: 9px; }
