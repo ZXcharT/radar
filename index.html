@@ -68,7 +68,7 @@
         .tooltip-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; background: var(--oc-muted); color: #fff; border-radius: 50%; font-size: 9px; cursor: help; margin-left: 4px; font-weight: bold;}
         .flex-center-y { display: flex; align-items: center; }
         
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(5px); z-index: 50000; display: flex; align-items: center; justify-content: center; opacity: 0; animation: fadeIn 0.2s forwards; padding: 1rem;}
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); z-index: 50000; display: flex; align-items: center; justify-content: center; opacity: 0; animation: fadeIn 0.2s forwards; padding: 1rem;}
         .modal-content { background: #fff; width: 100%; max-width: 800px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); overflow: hidden; transform: scale(0.95); animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         [v-cloak] { display: none; }
@@ -303,10 +303,83 @@
         #macro-summary a { border-radius: 0 !important; box-shadow: none !important; background: transparent !important; border-color: var(--oc-line-strong) !important; }
         #loading-screen { background: var(--oc-ground); }
         #loading-screen .spinner { width: 32px; height: 32px; border-width: 2px; border-color: var(--oc-line); border-top-color: var(--oc-ink); border-radius: 50%; }
-        .modal-content { border-radius: 2px; background: var(--oc-paper); color: var(--oc-text); box-shadow: 0 24px 60px var(--oc-modal-shadow); }
-        .modal-content .rounded-xl, .modal-content .rounded-lg { border-radius: 2px !important; }
-        .modal-content .shadow-sm, .modal-content .shadow-inner { box-shadow: none !important; }
-        .modal-content [class*="-right-4"][class*="-top-4"] { display: none; }
+        .modal-content { max-width: 900px; border: 1px solid var(--oc-line-strong); border-radius: 0; background: var(--oc-paper); color: var(--oc-text); box-shadow: none; }
+        .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 20px 24px 18px; border-bottom: 1px solid var(--oc-line-strong); background: var(--oc-paper); }
+        .modal-title-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+        .modal-title { color: var(--oc-ink); font-size: 26px; font-weight: 720; letter-spacing: -.03em; line-height: 1.1; }
+        .modal-type, .modal-code { color: var(--oc-quiet); font-size: 10px; font-weight: 650; letter-spacing: .08em; }
+        .modal-code { font-family: var(--oc-mono); letter-spacing: .02em; }
+        .modal-actions { display: flex; align-items: center; gap: 14px; margin-left: 4px; }
+        .modal-action { display: inline-flex; align-items: center; gap: 5px; padding: 3px 0; border: 0; border-bottom: 1px solid var(--oc-line-strong); border-radius: 0; background: transparent; color: var(--oc-muted); font-size: 10px; font-weight: 650; transition: color .15s ease,border-color .15s ease; }
+        .modal-action:hover { border-color: var(--oc-ink); color: var(--oc-ink); }
+        .modal-action svg { width: 13px; height: 13px; }
+        .modal-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 12px; margin-top: 14px; color: var(--oc-muted); font-size: 11px; }
+        .modal-date { color: var(--oc-text-secondary); font-family: var(--oc-mono); font-size: 11px; font-weight: 620; }
+        .modal-history { color: var(--oc-accent); font-size: 10px; font-weight: 650; }
+        .modal-leader-label { margin-left: 6px; color: var(--oc-quiet); font-size: 9px; font-weight: 650; letter-spacing: .08em; }
+        .modal-leader { color: var(--oc-ink); font-size: 11px; font-weight: 650; }
+        .modal-leader-change { font-size: 12px; font-weight: 680; }
+        .modal-close { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid transparent; border-radius: 0; background: transparent; color: var(--oc-quiet); }
+        .modal-close:hover { border-color: var(--oc-line-strong); color: var(--oc-ink); }
+        .modal-close svg { width: 17px; height: 17px; }
+        .modal-body { overflow-y: auto; padding: 22px 24px 26px; background: var(--oc-paper); }
+        .detail-section-title { margin-bottom: 9px; color: var(--oc-quiet); font-size: 9px; font-weight: 680; letter-spacing: .12em; }
+        .detail-metrics { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); margin-bottom: 28px; border-top: 1px solid var(--oc-line-strong); border-bottom: 1px solid var(--oc-line-strong); }
+        .detail-metric { position: relative; min-width: 0; padding: 15px 16px 14px; }
+        .detail-metric + .detail-metric { border-left: 1px solid var(--oc-line); }
+        .detail-metric.is-active::before { content:""; position:absolute; top:-1px; right:0; left:0; height:2px; background:var(--oc-accent); }
+        .detail-metric-label { color: var(--oc-muted); font-size: 10px; font-weight: 650; }
+        .detail-metric.is-active .detail-metric-label { color: var(--oc-accent); }
+        .detail-metric-value { margin-top: 5px; color: var(--oc-ink); font-family: var(--oc-mono); font-size: 22px; font-weight: 720; letter-spacing: -.04em; line-height: 1; }
+        .detail-metric-unit { margin-right: 3px; color: var(--oc-quiet); font-family: inherit; font-size: 9px; letter-spacing: .04em; }
+        .detail-metric-sub { margin-top: 7px; color: var(--oc-quiet); font-size: 9px; line-height: 1.35; }
+        .detail-metric-sub strong { color: var(--oc-text-secondary); font-weight: 650; }
+        .detail-trend-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+        .detail-trend-head .detail-section-title { margin: 0; }
+        .detail-tabs { display: flex; align-items: center; gap: 18px; border-bottom: 1px solid var(--oc-line); }
+        .detail-tab { margin-bottom: -1px; padding: 3px 0 6px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--oc-quiet); font-size: 10px; font-weight: 650; white-space: nowrap; }
+        .detail-tab:hover { color: var(--oc-ink); }
+        .detail-tab.is-active { border-bottom-color: var(--oc-accent); color: var(--oc-ink); }
+        .detail-chart { position: relative; width: 100%; height: 178px; margin: 0 0 32px; border-top: 1px solid var(--oc-line); border-bottom: 1px solid var(--oc-line); background: var(--oc-paper); }
+        .detail-chart svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+        .detail-chart-grid { stroke: var(--oc-line); stroke-width: 1; }
+        .detail-chart-line { fill: none; stroke: var(--oc-accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+        .detail-chart-hit { position: absolute; top: 0; bottom: 0; width: 14px; transform: translateX(-50%); cursor: pointer; }
+        .detail-chart-cursor { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--oc-line-strong); opacity: 0; }
+        .detail-chart-hit:hover .detail-chart-cursor, .detail-chart-hit.is-selected .detail-chart-cursor { opacity: 1; }
+        .detail-chart-point { position: absolute; left: 50%; width: 5px; height: 5px; border: 1px solid var(--oc-accent); border-radius: 50%; background: var(--oc-paper); opacity: 0; transform: translate(-50%,-50%); }
+        .detail-chart-hit:hover .detail-chart-point, .detail-chart-hit.is-selected .detail-chart-point { opacity: 1; }
+        .detail-chart-hit.is-selected .detail-chart-point { width: 7px; height: 7px; background: var(--oc-accent); }
+        .detail-chart-date, .detail-chart-rank { position: absolute; left: 50%; padding: 2px 4px; border: 1px solid var(--oc-line-strong); border-radius: 0; background: var(--oc-paper); color: var(--oc-muted); font-family: var(--oc-mono); font-size: 9px; font-weight: 620; line-height: 1.2; opacity: 0; pointer-events: none; transform: translateX(-50%); white-space: nowrap; }
+        .detail-chart-date { bottom: -23px; }
+        .detail-chart-rank { transform: translate(-50%,-145%); }
+        .detail-chart-hit:hover .detail-chart-date, .detail-chart-hit:hover .detail-chart-rank, .detail-chart-hit.is-selected .detail-chart-date, .detail-chart-hit.is-selected .detail-chart-rank { opacity: 1; }
+        .detail-chart-hit.is-selected .detail-chart-date, .detail-chart-hit.is-selected .detail-chart-rank { border-color: var(--oc-accent); color: var(--oc-accent); }
+        .similar-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); border-top: 1px solid var(--oc-line-strong); }
+        .similar-item { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border: 0; border-bottom: 1px solid var(--oc-line); border-radius: 0; background: transparent; color: var(--oc-ink); text-align: left; }
+        .similar-item:nth-child(odd) { padding-right: 16px; }
+        .similar-item:nth-child(even) { padding-left: 16px; border-left: 1px solid var(--oc-line); }
+        .similar-name { overflow: hidden; font-size: 11px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+        .similar-score { flex: none; color: var(--oc-quiet); font-family: var(--oc-mono); font-size: 9px; font-weight: 620; }
+        .similar-item:hover .similar-name, .similar-item:hover .similar-score { color: var(--oc-accent); }
+        .similar-empty { padding: 18px 0; border-top: 1px solid var(--oc-line); border-bottom: 1px solid var(--oc-line); color: var(--oc-quiet); font-size: 10px; text-align: center; }
+        @media (max-width: 640px) {
+            .modal-overlay { padding: 8px; }
+            .modal-head { gap: 12px; padding: 16px 15px 14px; }
+            .modal-title { font-size: 22px; }
+            .modal-actions { width: 100%; margin: 2px 0 0; }
+            .modal-meta { margin-top: 11px; gap: 6px 10px; }
+            .modal-leader-label { margin-left: 0; }
+            .modal-body { padding: 18px 15px 22px; }
+            .detail-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+            .detail-metric:nth-child(3) { border-left: 0; border-top: 1px solid var(--oc-line); }
+            .detail-metric:nth-child(4) { border-top: 1px solid var(--oc-line); }
+            .detail-trend-head { align-items: flex-start; flex-direction: column; }
+            .detail-tabs { width: 100%; justify-content: space-between; gap: 8px; }
+            .detail-chart { height: 156px; }
+            .similar-list { grid-template-columns: 1fr; }
+            .similar-item:nth-child(odd), .similar-item:nth-child(even) { padding: 10px 0; border-left: 0; }
+        }
         .loading-error-title { color: var(--oc-attack); font-size: 1rem; }
         .loading-error-detail { margin-top: 8px; color: var(--oc-muted); font-size: .8rem; }
         .loading-error-retry { margin-top: 16px; padding: 8px 24px; border: 1px solid var(--oc-ink); border-radius: 0; background: var(--oc-ink); color: var(--oc-on-solid); cursor: pointer; font-size: .9rem; }
@@ -844,137 +917,91 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
     <div v-if="modalData" class="modal-overlay" @click.self="closeModal">
         <div class="modal-content flex flex-col max-h-[85vh] md:max-h-[90vh]">
-            <div class="p-4 md:p-6 border-b border-slate-200 bg-slate-50 flex justify-between items-start">
+            <div class="modal-head">
                 <div class="w-full">
-                    <div class="flex flex-wrap items-center gap-2 md:gap-3">
-                        <h2 class="text-xl md:text-3xl font-black text-slate-800 tracking-tight">{{ cleanName(currentModalData.index_name) }}</h2>
-                        <span class="text-[10px] md:text-xs font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded shadow-sm" :class="currentModalData.type === '概念板块' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'">
-                            {{ currentModalData.type.replace('板块', '') }}
-                        </span>
-                        <span class="text-xs md:text-sm font-mono font-bold text-slate-400">{{ currentModalData.ts_code }}</span>
-                        
-                        <div class="flex gap-1 md:gap-2 ml-0 md:ml-2">
-                            <button @click="copySingleSector(currentModalData)" class="bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[10px] md:text-[11px] px-2 py-1 md:px-2.5 md:py-1.5 rounded shadow-sm font-bold flex items-center gap-1 transition-colors">
-                                <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                                <span class="hidden sm:inline">复制成分股</span><span class="sm:hidden">复制</span>
+                    <div class="modal-title-row">
+                        <h2 class="modal-title">{{ cleanName(currentModalData.index_name) }}</h2>
+                        <span class="modal-type">{{ currentModalData.type.replace('板块', '') }}</span>
+                        <span class="modal-code">{{ currentModalData.ts_code }}</span>
+                        <div class="modal-actions">
+                            <button @click="copySingleSector(currentModalData)" class="modal-action">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                <span>复制成分股</span>
                             </button>
-                            <button @click="exportSingleSector(currentModalData)" class="bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 text-[10px] md:text-[11px] px-2 py-1 md:px-2.5 md:py-1.5 rounded shadow-sm font-bold flex items-center gap-1 transition-colors">
-                                <svg class="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                <span class="hidden sm:inline">导出成分股</span><span class="sm:hidden">导出</span>
+                            <button @click="exportSingleSector(currentModalData)" class="modal-action">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                <span>导出成分股</span>
                             </button>
                         </div>
                     </div>
-                    
-                    <div class="mt-2 md:mt-3 flex items-center text-xs md:text-sm font-bold flex-wrap gap-2">
-                        <span class="text-xs font-bold px-2 py-0.5 rounded shadow-sm transition-colors" :class="chartSelectedDate ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-white text-slate-600 border border-slate-200'">
-                            📅 {{ currentModalData.trade_date }}
-                        </span>
-                        <span v-if="chartSelectedDate" class="text-[10px] text-blue-500 font-medium bg-blue-50 px-1.5 py-0.5 rounded animate-pulse border border-blue-100">历史回溯中</span>
-                        
-                        <span class="text-slate-500 ml-1 uppercase text-[10px] md:text-xs tracking-wider">当日领涨:</span>
-                        <span class="text-slate-800 bg-white px-1.5 md:px-2 py-0.5 rounded border border-slate-200 shadow-sm truncate max-w-[80px] md:max-w-none">{{ currentModalData.lead_stock || '--' }}</span>
-                        <span :class="(currentModalData.pct_change_stock || 0) >= 0 ? 'text-up' : 'text-down'" class="text-sm md:text-base">{{ (currentModalData.pct_change_stock || 0) > 0 ? '+' : '' }}{{ (currentModalData.pct_change_stock || 0).toFixed(2) }}%</span>
+                    <div class="modal-meta">
+                        <span class="modal-date">{{ currentModalData.trade_date }}</span>
+                        <span v-if="chartSelectedDate" class="modal-history">历史回溯</span>
+                        <span class="modal-leader-label">当日领涨</span>
+                        <span class="modal-leader">{{ currentModalData.lead_stock || '--' }}</span>
+                        <span :class="(currentModalData.pct_change_stock || 0) >= 0 ? 'text-up' : 'text-down'" class="modal-leader-change">{{ (currentModalData.pct_change_stock || 0) > 0 ? '+' : '' }}{{ (currentModalData.pct_change_stock || 0).toFixed(2) }}%</span>
                     </div>
                 </div>
-                <button @click="closeModal" class="p-1 md:p-2 -mr-2 md:-mr-0 hover:bg-slate-200 rounded-full transition"><svg class="w-5 h-5 md:w-6 md:h-6 text-slate-400 hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <button @click="closeModal" class="modal-close" aria-label="关闭详情"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
 
-            <div class="p-4 md:p-8 overflow-y-auto bg-white">
-                <h3 class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">当日数据切片 (排名)</h3>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-6 md:mb-10">
-                    <div class="p-3 md:p-5 rounded-xl shadow-sm relative overflow-hidden transition-colors bg-slate-50 border border-slate-100">
-                        <div class="text-[10px] md:text-xs text-slate-500 mb-1 font-bold">当日涨跌幅</div>
-                        <div class="text-lg md:text-2xl font-black" :class="(currentModalData.pct_change || 0) >= 0 ? 'text-up' : 'text-down'">{{ Number.isFinite(currentModalData.pct_change) ? ((currentModalData.pct_change > 0 ? '+' : '') + currentModalData.pct_change.toFixed(2) + '%') : '-' }}</div>
+            <div class="modal-body">
+                <h3 class="detail-section-title">当日数据切片 · 排名</h3>
+                <div class="detail-metrics">
+                    <div class="detail-metric">
+                        <div class="detail-metric-label">当日涨跌幅</div>
+                        <div class="detail-metric-value" :class="(currentModalData.pct_change || 0) >= 0 ? 'text-up' : 'text-down'">{{ Number.isFinite(currentModalData.pct_change) ? ((currentModalData.pct_change > 0 ? '+' : '') + currentModalData.pct_change.toFixed(2) + '%') : '-' }}</div>
                     </div>
-                    <div class="p-3 md:p-5 rounded-xl shadow-sm relative overflow-hidden transition-colors" :class="modalActiveTab === 'Swing' ? 'bg-blue-50 border border-blue-200' : 'bg-slate-50 border border-slate-100'">
-                        <div v-if="modalActiveTab === 'Swing'" class="absolute -right-4 -top-4 w-12 h-12 md:w-16 md:h-16 bg-blue-100 rounded-full opacity-50"></div>
-                        <div class="text-[10px] md:text-xs mb-1 font-bold" :class="modalActiveTab === 'Swing' ? 'text-blue-600' : 'text-slate-500'">波段流入排名</div>
-                        <div class="text-lg md:text-2xl font-black flex items-baseline gap-1" :class="modalActiveTab === 'Swing' ? 'text-blue-800' : 'text-slate-800'">
-                            <span class="text-[10px] md:text-sm font-bold" :class="modalActiveTab === 'Swing' ? 'text-blue-600' : 'text-slate-500'">No.</span>{{ currentModalData.Swing_RankPos || '-' }}
-                        </div>
-                        <div class="text-[9px] md:text-[11px] mt-1 font-medium" :class="modalActiveTab === 'Swing' ? 'text-blue-500' : 'text-slate-400'">波段均值: <span class="font-bold" :class="modalActiveTab === 'Swing' ? 'text-blue-700' : 'text-slate-700'">{{ ((currentModalData.Swing_Ratio_Val || 0) * 100).toFixed(2) }}%</span></div>
+                    <div class="detail-metric" :class="{'is-active': modalActiveTab === 'Swing'}">
+                        <div class="detail-metric-label">波段流入排名</div>
+                        <div class="detail-metric-value"><span class="detail-metric-unit">NO.</span>{{ currentModalData.Swing_RankPos || '-' }}</div>
+                        <div class="detail-metric-sub">波段均值 <strong>{{ ((currentModalData.Swing_Ratio_Val || 0) * 100).toFixed(2) }}%</strong></div>
                     </div>
-                    <div class="p-3 md:p-5 rounded-xl shadow-sm relative overflow-hidden transition-colors" :class="modalActiveTab === 'Ratio' ? 'bg-blue-50 border border-blue-200' : 'bg-slate-50 border border-slate-100'">
-                        <div v-if="modalActiveTab === 'Ratio'" class="absolute -right-4 -top-4 w-12 h-12 md:w-16 md:h-16 bg-blue-100 rounded-full opacity-50"></div>
-                        <div class="text-[10px] md:text-xs mb-1 font-bold" :class="modalActiveTab === 'Ratio' ? 'text-blue-600' : 'text-slate-500'">单日流入排名</div>
-                        <div class="text-lg md:text-2xl font-black flex items-baseline gap-1" :class="modalActiveTab === 'Ratio' ? 'text-blue-800' : 'text-slate-800'">
-                            <span class="text-[10px] md:text-sm font-bold" :class="modalActiveTab === 'Ratio' ? 'text-blue-600' : 'text-slate-500'">No.</span>{{ currentModalData.Ratio_RankPos || '-' }}
-                        </div>
-                        <div class="text-[9px] md:text-[11px] mt-1 font-medium" :class="modalActiveTab === 'Ratio' ? 'text-blue-500' : 'text-slate-400'">占比: <span class="font-bold" :class="modalActiveTab === 'Ratio' ? 'text-blue-700' : 'text-slate-700'">{{ ((currentModalData.Ratio_Raw_Pct || 0) * 100).toFixed(2) }}%</span></div>
+                    <div class="detail-metric" :class="{'is-active': modalActiveTab === 'Ratio'}">
+                        <div class="detail-metric-label">单日流入排名</div>
+                        <div class="detail-metric-value"><span class="detail-metric-unit">NO.</span>{{ currentModalData.Ratio_RankPos || '-' }}</div>
+                        <div class="detail-metric-sub">占比 <strong>{{ ((currentModalData.Ratio_Raw_Pct || 0) * 100).toFixed(2) }}%</strong></div>
                     </div>
-                    <div class="p-3 md:p-5 rounded-xl shadow-sm relative overflow-hidden transition-colors" :class="modalActiveTab === 'Amount' ? 'bg-blue-50 border border-blue-200' : 'bg-slate-50 border border-slate-100'">
-                        <div v-if="modalActiveTab === 'Amount'" class="absolute -right-4 -top-4 w-12 h-12 md:w-16 md:h-16 bg-blue-100 rounded-full opacity-50"></div>
-                        <div class="text-[10px] md:text-xs mb-1 font-bold" :class="modalActiveTab === 'Amount' ? 'text-blue-600' : 'text-slate-500'">单日净额排名</div>
-                        <div class="text-lg md:text-2xl font-black flex items-baseline gap-1" :class="modalActiveTab === 'Amount' ? 'text-blue-800' : 'text-slate-800'">
-                             <span class="text-[10px] md:text-sm font-bold" :class="modalActiveTab === 'Amount' ? 'text-blue-600' : 'text-slate-500'">No.</span>{{ currentModalData.Amount_RankPos || '-' }}
-                        </div>
-                        <div class="text-[9px] md:text-[11px] mt-1 font-medium" :class="modalActiveTab === 'Amount' ? 'text-blue-500' : 'text-slate-400'">主力净流入: <span class="font-bold" :class="modalActiveTab === 'Amount' ? 'text-blue-700' : 'text-slate-700'">{{ (currentModalData.Amount_Raw_BN || 0).toFixed(2) }} 亿</span></div>
+                    <div class="detail-metric" :class="{'is-active': modalActiveTab === 'Amount'}">
+                        <div class="detail-metric-label">单日净额排名</div>
+                        <div class="detail-metric-value"><span class="detail-metric-unit">NO.</span>{{ currentModalData.Amount_RankPos || '-' }}</div>
+                        <div class="detail-metric-sub">主力净流入 <strong>{{ (currentModalData.Amount_Raw_BN || 0).toFixed(2) }} 亿</strong></div>
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-3 gap-2">
-                    <h3 class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        近 30 日 [{{ modalActiveTab === 'Swing' ? '波段流入' : (modalActiveTab === 'Ratio' ? '单日流入' : '单日净额') }}] 排名走势
-                    </h3>
-                    <div class="flex bg-slate-100 p-1 rounded-lg shadow-inner border border-slate-200 inline-flex w-full sm:w-auto">
-                        <button v-for="tab in tabs.filter(t=>t.id!=='RankChange')" @click="modalActiveTab = tab.id" 
-                                :class="modalActiveTab === tab.id ? 'bg-white shadow text-blue-600 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'"
-                                class="flex-1 sm:flex-none px-2 md:px-3 py-1 text-[10px] md:text-[11px] font-bold rounded-md transition-all">
+                <div class="detail-trend-head">
+                    <h3 class="detail-section-title">近 30 日 · {{ modalActiveTab === 'Swing' ? '波段流入' : (modalActiveTab === 'Ratio' ? '单日流入' : '单日净额') }}排名轨迹</h3>
+                    <div class="detail-tabs" role="tablist" aria-label="详情排名指标">
+                        <button v-for="tab in tabs.filter(t=>t.id!=='RankChange')" @click="modalActiveTab = tab.id"
+                                :class="{'is-active': modalActiveTab === tab.id}"
+                                class="detail-tab" role="tab" :aria-selected="modalActiveTab === tab.id">
                             {{ tab.name }}
                         </button>
                     </div>
                 </div>
-                
-                <div class="relative w-full h-36 md:h-44 mb-10 md:mb-12 mt-2">
-                    <div class="absolute inset-0 border border-slate-200 rounded-xl bg-white overflow-hidden shadow-inner">
-                        <svg class="w-full h-full absolute inset-0" viewBox="0 0 400 160" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="var(--oc-accent)" stop-opacity="0.3"></stop>
-                                    <stop offset="100%" stop-color="var(--oc-accent)" stop-opacity="0.0"></stop>
-                                </linearGradient>
-                            </defs>
-                            <line x1="0" y1="80" x2="400" y2="80" stroke="var(--oc-line)" stroke-width="1" stroke-dasharray="2 2"></line>
-                            <path :d="getChartData(modalData.index_name, modalActiveTab).areaPath" fill="url(#areaGradient)"></path>
-                            <path :d="getChartData(modalData.index_name, modalActiveTab).linePath" stroke="var(--oc-accent)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
-                    </div>
-
-                    <div class="absolute inset-0 z-10">
-                        <div v-for="(pt, i) in getChartData(modalData.index_name, modalActiveTab).points" :key="pt.date"
-                             class="absolute top-0 bottom-0 w-4 md:w-6 transform -translate-x-1/2 group cursor-pointer"
-                             :style="{ left: pt.xPct }"
-                             @click.stop="toggleChartDate(pt.date)">
-                             
-                            <div class="absolute top-0 bottom-0 left-1/2 w-[2px] bg-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                                 :class="{'opacity-100 bg-blue-500': chartSelectedDate === pt.date}"></div>
-
-                            <div class="absolute w-[8px] h-[8px] md:w-[10px] md:h-[10px] bg-white border-[2.5px] border-blue-600 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all shadow-sm group-hover:scale-[1.8] group-hover:border-blue-700"
-                                 :class="chartSelectedDate === pt.date ? 'scale-[1.8] bg-blue-100 ring-[3px] ring-blue-300 border-blue-800' : ''"
-                                 :style="{ left: '50%', top: pt.yPct }"></div>
-
-                            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-[9px] md:text-[10px] text-slate-500 font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-white/95 px-1.5 py-0.5 rounded shadow-sm border border-slate-200 z-20"
-                                 :class="{'opacity-100 text-blue-700 border-blue-300': chartSelectedDate === pt.date}">
-                                {{ pt.date.substring(5) }}
-                            </div>
-                            
-                            <div class="absolute left-1/2 transform -translate-x-1/2 -translate-y-[150%] text-[9px] md:text-[10px] font-black text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity bg-white px-1.5 py-0.5 rounded shadow border border-slate-200 pointer-events-none z-20"
-                                 :class="{'opacity-100 border-blue-300 text-blue-700 shadow-md': chartSelectedDate === pt.date}"
-                                 :style="{ top: pt.yPct }">
-                                No.{{ pt.rank }}
-                            </div>
-                        </div>
+                <div class="detail-chart">
+                    <svg viewBox="0 0 400 160" preserveAspectRatio="none" aria-hidden="true">
+                        <line v-for="y in [32,64,96,128]" :key="y" x1="0" :y1="y" x2="400" :y2="y" class="detail-chart-grid"></line>
+                        <path :d="getChartData(modalData.index_name, modalActiveTab).linePath" class="detail-chart-line"></path>
+                    </svg>
+                    <div v-for="pt in getChartData(modalData.index_name, modalActiveTab).points" :key="pt.date"
+                         class="detail-chart-hit" :class="{'is-selected': chartSelectedDate === pt.date}"
+                         :style="{ left: pt.xPct }" @click.stop="toggleChartDate(pt.date)">
+                        <div class="detail-chart-cursor"></div>
+                        <div class="detail-chart-point" :style="{ top: pt.yPct }"></div>
+                        <div class="detail-chart-date">{{ pt.date.substring(5) }}</div>
+                        <div class="detail-chart-rank" :style="{ top: pt.yPct }">NO.{{ pt.rank }}</div>
                     </div>
                 </div>
 
-                <h3 class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 md:mb-4 mt-4">成分近似板块 (挖掘)</h3>
-                <div class="flex flex-wrap gap-2 md:gap-3">
-                    <button v-for="sim in similarSectors" :key="sim.name" @click="openModalByName(sim.name)" class="flex items-center bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition group">
-                        <span class="font-bold text-xs md:text-sm text-slate-700 group-hover:text-blue-600 transition">{{ sim.name }}</span>
-                        <span class="ml-2 md:ml-3 text-[9px] md:text-[10px] text-slate-500 font-mono bg-slate-100 px-1.5 py-0.5 md:px-2 md:py-0.5 rounded border border-slate-200 font-bold">重合: {{(sim.score * 100).toFixed(1)}}%</span>
+                <h3 class="detail-section-title">成分近似板块 · 重合度</h3>
+                <div v-if="similarSectors.length" class="similar-list">
+                    <button v-for="sim in similarSectors" :key="sim.name" @click="openModalByName(sim.name)" class="similar-item">
+                        <span class="similar-name">{{ sim.name }}</span>
+                        <span class="similar-score">{{(sim.score * 100).toFixed(1)}}% 重合</span>
                     </button>
-                    <div v-if="similarSectors.length === 0" class="text-xs md:text-sm font-medium text-slate-400 bg-slate-50 p-3 rounded-lg border border-slate-100 w-full text-center">暂无高重合度板块信息 (请确认字典有效)</div>
                 </div>
+                <div v-else class="similar-empty">暂无高重合度板块信息</div>
             </div>
         </div>
     </div>
@@ -1568,23 +1595,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     return { x: i * dx, y: y, xPct, yPct, date: datesAsc[i], rank: safeRank };
                 });
                 
-                let linePath = `M ${pts[0].x},${pts[0].y}`;
-                for (let i = 0; i < pts.length - 1; i++) {
-                    const p0 = i > 0 ? pts[i - 1] : pts[0];
-                    const p1 = pts[i];
-                    const p2 = pts[i + 1];
-                    const p3 = i !== pts.length - 2 ? pts[i + 2] : p2;
-                    const tension = 0.15; 
-                    const cp1x = p1.x + (p2.x - p0.x) * tension;
-                    const cp1y = p1.y + (p2.y - p0.y) * tension;
-                    const cp2x = p2.x - (p3.x - p1.x) * tension;
-                    const cp2y = p2.y - (p3.y - p1.y) * tension;
-                    const c1y = Math.max(0, Math.min(height, cp1y));
-                    const c2y = Math.max(0, Math.min(height, cp2y));
-                    linePath += ` C ${cp1x},${c1y} ${cp2x},${c2y} ${p2.x},${p2.y}`;
-                }
-                let areaPath = `${linePath} L ${width},${height} L 0,${height} Z`;
-                return { linePath, areaPath, points: pts };
+                const linePath = pts.map((pt, i) => `${i === 0 ? 'M' : 'L'} ${pt.x},${pt.y}`).join(' ');
+                return { linePath, areaPath: '', points: pts };
             },
             
             async copySingleSector(sectorObj) {
