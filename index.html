@@ -226,6 +226,7 @@
         .oc-search-code { margin-left: 7px; color: var(--oc-quiet); font-size: 9px; }
         .oc-search-type { color: var(--oc-muted); font-size: 9px; }
         .oc-control-set { min-height: 31px; display: flex; align-items: center; margin-left: 18px; padding-left: 18px; border-left: 1px solid var(--oc-line); }
+        .oc-sort-control { margin-left: auto; padding-left: 0; border-left: 0; }
         .oc-control-label { margin-right: 10px; color: var(--oc-quiet); font-size: 9px; white-space: nowrap; }
         .oc-tab { height: 32px; padding: 0 9px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--oc-muted); font-size: 10px; white-space: nowrap; }
         .oc-tab:hover { color: var(--oc-ink); }
@@ -444,6 +445,7 @@
             .oc-search-wrap { width: 100%; flex-basis: 100%; }
             .oc-control-set { margin-left: 0; padding-left: 0; padding-right: 12px; border-left: 0; }
             .oc-control-set + .oc-control-set { margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--oc-line); }
+            .oc-control-set.oc-sort-control { margin-left: auto; padding-left: 0; border-left: 0; }
             .mobile-radar-only > div { min-width: 0; border-radius: 0 !important; box-shadow: none !important; border-color: var(--oc-line-strong) !important; }
             .mobile-radar-only .overflow-x-auto { width: 100%; max-width: 100%; min-width: 0; }
             .mobile-radar-only > div > div:first-child { border-radius: 0 !important; background: #f7f8f9 !important; }
@@ -465,6 +467,7 @@
             .oc-export { flex: 0 0 auto; }
             .oc-control-set { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; padding-right: 0; }
             .oc-control-set + .oc-control-set { margin-left: 0; padding-left: 0; border-left: 0; border-top: 1px solid var(--oc-line); }
+            .oc-control-set.oc-sort-control { margin-left: 0; padding-left: 0; }
             .oc-control-label { flex: 0 0 auto; }
             .oc-tab { flex: 1 0 auto; }
             .oc-date { min-width: 0; }
@@ -542,7 +545,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             <button @click="activeType = '概念板块'; closeAllCalendars()" :class="{'is-active': activeType === '概念板块'}" class="oc-tab">概念</button>
             <button @click="activeType = '行业板块'; closeAllCalendars()" :class="{'is-active': activeType === '行业板块'}" class="oc-tab">行业</button>
         </div>
-        <div class="oc-control-set hide-scrollbar">
+        <div class="oc-control-set oc-sort-control hide-scrollbar">
             <span class="oc-control-label">排序指标</span>
             <button v-for="tab in tabs" @click="activeTab = tab.id; closeAllCalendars()" :class="{'is-active': activeTab === tab.id}" class="oc-tab">{{ tab.name }}</button>
         </div>
