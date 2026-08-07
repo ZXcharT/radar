@@ -1,21 +1,44 @@
 (()=>{
 const DATA_START="20021112";
-const CROWDING_COLOR="#d64b45";
-const COLORS={
-  "000001.SH":"#557da8",
-  "000300.SH":"#7d6f8f",
-  "000016.SH":"#ad8959",
-  "399006.SZ":"#5f8b84",
-  "000688.SH":"#a56f89",
-  "000852.SH":"#788d63",
-  "932000.CSI":"#7a8492"
+const THEME_KEY="onechart-theme";
+const CHART_THEMES={
+  light:{
+    crowding:"#d64b45",series:{"000001.SH":"#557da8","000300.SH":"#7d6f8f","000016.SH":"#ad8959","399006.SZ":"#5f8b84","000688.SH":"#a56f89","000852.SH":"#788d63","932000.CSI":"#7a8492"},
+    muted:"#64748b",axis:"#697586",axisLine:"#cfd7e2",splitLine:"#edf1f5",tooltipBg:"rgba(255,255,255,.94)",tooltipBorder:"#d7e0ea",tooltipText:"#475569",tooltipShadow:"0 4px 10px rgba(15,23,42,.10)",
+    sliderBorder:"#d8e0e9",sliderBg:"rgba(226,232,240,.42)",sliderFill:"rgba(85,125,168,.14)",sliderHandle:"#728da8",sliderHandleBorder:"#fff",sliderMove:"rgba(85,125,168,.035)",zoneGreen:"#5f8b84",zoneGold:"#9b7545"
+  },
+  dark:{
+    crowding:"#e06a64",series:{"000001.SH":"#8eacd2","000300.SH":"#a89ab8","000016.SH":"#c2a06b","399006.SZ":"#72a69d","000688.SH":"#bd88a5","000852.SH":"#97a878","932000.CSI":"#9aa4af"},
+    muted:"#8f99a5",axis:"#8f99a5",axisLine:"#39424d",splitLine:"#252d36",tooltipBg:"rgba(24,29,35,.96)",tooltipBorder:"#39424d",tooltipText:"#c9d0d8",tooltipShadow:"0 6px 18px rgba(0,0,0,.40)",
+    sliderBorder:"#39424d",sliderBg:"rgba(40,47,56,.78)",sliderFill:"rgba(142,172,210,.20)",sliderHandle:"#8eacd2",sliderHandleBorder:"#15191e",sliderMove:"rgba(142,172,210,.08)",zoneGreen:"#72a69d",zoneGold:"#c2a06b"
+  }
 };
+const currentTheme=()=>document.documentElement.dataset.theme==="dark"?"dark":"light";
+const chartTheme=()=>CHART_THEMES[currentTheme()];
+const seriesColor=code=>chartTheme().series[code]||chartTheme().muted;
 const LABELS={"000001.SH":"上证","399006.SZ":"创业","000688.SH":"科创","000016.SH":"50","000300.SH":"300","000852.SH":"1000","932000.CSI":"2000"};
 const TAG_ORDER=["000001.SH","399006.SZ","000688.SH","000016.SH","000300.SH","000852.SH","932000.CSI"];
 let data,chart,mode="smooth",showCrowding=true,chosen=["000001.SH"],zoom={start:0,end:100},defaultZoom={start:0,end:100};
 let baseAnchorIndex=0,rightAxisRange={min:-10,max:10},scaleMode="common";
 let selectedScaleSeries=null,manualScales={},verticalDrag=null,scaleFrame=null;
 const $=id=>document.getElementById(id);
+function syncThemeButton(){
+  const button=$("theme-toggle");if(!button)return;
+  const dark=currentTheme()==="dark",target=dark?"浅色":"深色",label=dark?"切换到浅色模式":"切换到深色模式";
+  button.setAttribute("aria-pressed",String(dark));button.setAttribute("aria-label",label);button.title=label;
+  const text=button.querySelector(".theme-label");if(text)text.textContent=target;
+}
+function applyTheme(theme,{persist=true,emit=true}={}){
+  const next=theme==="dark"?"dark":"light";
+  document.documentElement.dataset.theme=next;document.documentElement.style.colorScheme=next;
+  if(persist)try{localStorage.setItem(THEME_KEY,next)}catch(error){}
+  syncThemeButton();
+  if(emit)dispatchEvent(new CustomEvent("onechart-theme-change",{detail:{theme:next}}));
+}
+function setupTheme(){
+  applyTheme(currentTheme(),{persist:false,emit:false});
+  const button=$("theme-toggle");if(button)button.addEventListener("click",()=>applyTheme(currentTheme()==="dark"?"light":"dark"));
+}
 const finite=value=>typeof value==="number"&&Number.isFinite(value);
 const signed=value=>(value>=0?"+":"")+Number(value).toFixed(2);
 const formatDate=value=>String(value||"").replace(/^20(\d{2})(\d{2})(\d{2})$/,"$1-$2-$3");
@@ -110,15 +133,16 @@ function crowdingAxisBounds(){
 }
 
 function buildSeries(axis){
+  const theme=chartTheme(),crowdingColor=theme.crowding;
   const crowding={
     name:"行情离散度",type:"line",yAxisIndex:0,data:showCrowding?data[mode]:data[mode].map(()=>null),showSymbol:false,connectNulls:false,z:5,
-    lineStyle:{color:CROWDING_COLOR,width:3,opacity:1},itemStyle:{color:CROWDING_COLOR},emphasis:{disabled:true},blur:{lineStyle:{opacity:1}},
+    lineStyle:{color:crowdingColor,width:3,opacity:1},itemStyle:{color:crowdingColor},emphasis:{disabled:true},blur:{lineStyle:{opacity:1}},
     markLine:{
       silent:true,symbol:"none",label:{formatter:"{b}",position:"start",distance:8,align:"right",verticalAlign:"middle",fontSize:11,fontWeight:800},
       data:[
-        {name:"30",yAxis:30,lineStyle:{color:"rgba(93,139,132,.78)",width:1.4,type:"dashed"},label:{color:"#5f8b84"}},
-        {name:"70",yAxis:70,lineStyle:{color:"rgba(173,137,89,.82)",width:1.5,type:"dashed"},label:{color:"#9b7545"}},
-        {name:"120",yAxis:120,lineStyle:{color:"rgba(214,75,69,.88)",width:1.6,type:"dashed"},label:{color:CROWDING_COLOR}}
+        {name:"30",yAxis:30,lineStyle:{color:theme.zoneGreen,width:1.4,type:"dashed",opacity:.78},label:{color:theme.zoneGreen}},
+        {name:"70",yAxis:70,lineStyle:{color:theme.zoneGold,width:1.5,type:"dashed",opacity:.82},label:{color:theme.zoneGold}},
+        {name:"120",yAxis:120,lineStyle:{color:crowdingColor,width:1.6,type:"dashed",opacity:.88},label:{color:crowdingColor}}
       ]
     },
     markArea:{silent:true,label:{show:false},data:[
@@ -131,8 +155,8 @@ function buildSeries(axis){
     return{
       name:index.name,type:"line",yAxisIndex:1,showSymbol:false,connectNulls:false,triggerLineEvent:true,z:selected?4:2,
       data:visualValues(index),
-      lineStyle:{color:COLORS[code],width:selected?2.15:1.55,opacity:selected?.9:.58},
-      itemStyle:{color:COLORS[code],opacity:selected?.9:.72},
+      lineStyle:{color:seriesColor(code),width:selected?2.15:1.55,opacity:selected?.9:.58},
+      itemStyle:{color:seriesColor(code),opacity:selected?.9:.72},
       emphasis:{disabled:true},blur:{lineStyle:{opacity:selected?.9:.58}}
     };
   });
@@ -140,28 +164,28 @@ function buildSeries(axis){
 }
 
 function tooltip(items){
-  const date=items[0]?.axisValue;
+  const date=items[0]?.axisValue,theme=chartTheme();
   if(!date)return"";
-  const output=[`<div style="margin-bottom:5px;color:#64748b;font-weight:700">${formatDate(date)}</div>`];
+  const output=[`<div style="margin-bottom:5px;color:${theme.muted};font-weight:700">${formatDate(date)}</div>`];
   for(const item of items){
     if(item.seriesName==="行情离散度"){
-      output.push(`<span style="color:${CROWDING_COLOR}">●</span> 行情离散度：${finite(item.data)?Number(item.data).toFixed(2):"--"}`);
+      output.push(`<span style="color:${theme.crowding}">●</span> 行情离散度：${finite(item.data)?Number(item.data).toFixed(2):"--"}`);
       continue;
     }
     const index=data.indices.find(candidate=>candidate.name===item.seriesName),norm=normalized(index),pos=data.dates.indexOf(date),price=index?.close[pos];
     const growth=price>0&&norm.base?100*(price/norm.base-1):null;
-    output.push(`<span style="color:${COLORS[index.code]}">●</span> ${item.seriesName}：区间涨跌幅 ${growth===null?"--":signed(growth)+"%"}`);
+    output.push(`<span style="color:${seriesColor(index.code)}">●</span> ${item.seriesName}：区间涨跌幅 ${growth===null?"--":signed(growth)+"%"}`);
   }
   return output.join("<br/>");
 }
 
 function rightAxisConfig(){
-  const hidden=scaleMode==="fill"||isScaleModified();
+  const hidden=scaleMode==="fill"||isScaleModified(),theme=chartTheme();
   const range=scaleMode==="fill"?{min:-55,max:55}:rightAxisRange;
   return{
     type:"value",min:range.min,max:range.max,name:"",
-    axisLabel:{show:!hidden,color:"#7a8492",formatter:value=>String(Math.round(100*(Math.exp(value/100)-1)))},
-    axisTick:{show:!hidden},axisLine:{show:!hidden},splitLine:{show:false}
+    axisLabel:{show:!hidden,color:theme.axis,formatter:value=>String(Math.round(100*(Math.exp(value/100)-1)))},
+    axisTick:{show:!hidden,lineStyle:{color:theme.axisLine}},axisLine:{show:!hidden,lineStyle:{color:theme.axisLine}},splitLine:{show:false}
   };
 }
 
@@ -182,18 +206,18 @@ function updateScaleUI(){
 }
 
 function draw(){
-  const axis=crowdingAxisBounds();
+  const axis=crowdingAxisBounds(),theme=chartTheme();
   chart.setOption({
-    animation:false,color:[CROWDING_COLOR,...chosen.map(code=>COLORS[code])],legend:{show:false},
-    grid:{left:64,right:72,top:window.innerWidth<=420?56:48,bottom:86,containLabel:false},tooltip:{trigger:"axis",confine:true,formatter:tooltip,backgroundColor:"rgba(255,255,255,.60)",borderColor:"#d7e0ea",borderWidth:1,padding:[8,10],textStyle:{color:"#475569",fontSize:12,fontWeight:700},extraCssText:"border-radius:7px;box-shadow:0 4px 10px rgba(15,23,42,.10);backdrop-filter:blur(6px);"},
-    xAxis:{type:"category",data:data.dates,boundaryGap:false,axisLabel:{color:"#697586",formatter:value=>formatDate(value)},axisLine:{lineStyle:{color:"#cfd7e2"}}},
+    animation:false,backgroundColor:"transparent",color:[theme.crowding,...chosen.map(seriesColor)],legend:{show:false},
+    grid:{left:64,right:72,top:window.innerWidth<=420?56:48,bottom:86,containLabel:false},tooltip:{trigger:"axis",confine:true,formatter:tooltip,backgroundColor:theme.tooltipBg,borderColor:theme.tooltipBorder,borderWidth:1,padding:[8,10],textStyle:{color:theme.tooltipText,fontSize:12,fontWeight:700},extraCssText:`border-radius:2px;box-shadow:${theme.tooltipShadow};`},
+    xAxis:{type:"category",data:data.dates,boundaryGap:false,axisLabel:{color:theme.axis,formatter:value=>formatDate(value)},axisTick:{show:false},axisLine:{lineStyle:{color:theme.axisLine}}},
     yAxis:[
-      {type:"value",name:"",min:15,max:axis.max,axisLabel:{color:"#697586",formatter:value=>Math.round(value)===200?"200":""},axisTick:{show:false},splitLine:{lineStyle:{color:"#edf1f5"}}},
+      {type:"value",name:"",min:15,max:axis.max,axisLabel:{color:theme.axis,formatter:value=>Math.round(value)===200?"200":""},axisTick:{show:false},axisLine:{lineStyle:{color:theme.axisLine}},splitLine:{lineStyle:{color:theme.splitLine}}},
       rightAxisConfig()
     ],
     dataZoom:[
       {type:"inside",filterMode:"none",start:zoom.start,end:zoom.end,zoomOnMouseWheel:true,moveOnMouseMove:false,moveOnMouseWheel:false,preventDefaultMouseMove:false,throttle:45},
-      {type:"slider",filterMode:"none",start:zoom.start,end:zoom.end,height:30,bottom:18,brushSelect:false,showDetail:false,showDataShadow:false,handleSize:"100%",moveHandleSize:"100%",borderColor:"#d8e0e9",backgroundColor:"rgba(226,232,240,.42)",fillerColor:"rgba(85,125,168,.14)",handleStyle:{color:"#728da8",borderColor:"#fff",borderWidth:1},moveHandleStyle:{color:"rgba(85,125,168,.035)",borderColor:"transparent"},selectedDataBackground:{lineStyle:{color:"transparent"},areaStyle:{color:"transparent"}}}
+      {type:"slider",filterMode:"none",start:zoom.start,end:zoom.end,height:30,bottom:18,brushSelect:false,showDetail:false,showDataShadow:false,handleSize:"100%",moveHandleSize:"100%",borderColor:theme.sliderBorder,backgroundColor:theme.sliderBg,fillerColor:theme.sliderFill,handleStyle:{color:theme.sliderHandle,borderColor:theme.sliderHandleBorder,borderWidth:1},moveHandleStyle:{color:theme.sliderMove,borderColor:"transparent"},selectedDataBackground:{lineStyle:{color:"transparent"},areaStyle:{color:"transparent"}}}
     ],
     series:buildSeries(axis)
   },{notMerge:true,lazyUpdate:true});
@@ -232,10 +256,10 @@ function updateStats(){
 }
 
 function renderSeriesTags(){
-  const dispersion=`<button class="series-chip crowding${showCrowding?" active":""}" style="--series-color:${CROWDING_COLOR}" type="button" data-role="dispersion" aria-pressed="${showCrowding}">离散度</button>`;
+  const dispersion=`<button class="series-chip crowding${showCrowding?" active":""}" style="--series-color:${chartTheme().crowding}" type="button" data-role="dispersion" aria-pressed="${showCrowding}">离散度</button>`;
   const indices=TAG_ORDER.map(code=>{
     const index=data.indices.find(item=>item.code===code),active=chosen.includes(code),scaleSelected=index.name===selectedScaleSeries;
-    return `<button class="series-chip${active?" active":""}${scaleSelected?" scale-selected":""}" style="--series-color:${COLORS[code]}" type="button" data-code="${code}" aria-pressed="${active}">${LABELS[code]}</button>`;
+    return `<button class="series-chip${active?" active":""}${scaleSelected?" scale-selected":""}" style="--series-color:${seriesColor(code)}" type="button" data-code="${code}" aria-pressed="${active}">${LABELS[code]}</button>`;
   }).join("");
   $("series-tags").innerHTML=dispersion+indices;
 }
@@ -322,5 +346,10 @@ async function init(){
   addEventListener("resize",()=>chart.resize());
 }
 
-init().catch(error=>{console.error(error);$("chart").innerHTML='<div style="padding:80px 20px;text-align:center;color:#94a3b8">数据暂不可用</div>'});
+setupTheme();
+addEventListener("onechart-theme-change",()=>{
+  if(!chart||!data)return;
+  renderSeriesTags();draw();chart.resize();
+});
+init().catch(error=>{console.error(error);$("chart").innerHTML='<div class="chart-unavailable">数据暂不可用</div>'});
 })();
