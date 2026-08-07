@@ -40,3 +40,7 @@ macOS 也可运行仓库中的 `preview.command`。
 - 推送、线上发布、域名和 DNS 修改需要单独批准。
 
 参与维护前请先阅读 [`AGENTS.md`](AGENTS.md)。
+
+## 许可证与品牌
+
+本仓库目前没有声明统一的开源许可证。公开访问源码不等于获得复制、修改或再分发授权。OneChart、OneChartLab 名称及其 Logo 的相关权利保留；`assets/brand/` 中的品牌资产不受任何可能单独适用于代码或文档的许可证覆盖，详见 [`TRADEMARKS.md`](TRADEMARKS.md)。

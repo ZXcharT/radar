@@ -142,8 +142,9 @@ body.macro-page{min-width:0;margin:0;padding:0 0 28px;background:var(--oc-ground
 .oc-nav-inner{height:100%;display:flex;align-items:center;gap:0}
 .oc-pagehead{min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:18px 0 16px}
 .oc-title{min-width:0;display:flex;align-items:baseline;gap:12px}.oc-title h1{margin:0;color:var(--oc-ink);font-size:26px;line-height:1.15;font-weight:710;letter-spacing:-.04em;white-space:nowrap}.oc-title p{margin:0;color:var(--oc-muted);font-size:10px;white-space:nowrap}
-.site-wordmark{display:flex;align-items:center;color:var(--oc-ink);font-size:16px;line-height:1;font-weight:730;letter-spacing:-.035em;text-decoration:none}
-.site-wordmark::after{content:"";width:1px;height:18px;margin-left:22px;background:var(--oc-line-strong)}
+.site-wordmark{display:flex;align-items:center;gap:7px;color:var(--oc-ink);font-size:16px;line-height:1;font-weight:730;letter-spacing:-.035em;text-decoration:none}
+.oc-brand-mark{display:block;width:24px;height:24px;flex:none}.oc-brand-mark-dark{display:none}html[data-theme="dark"] .oc-brand-mark-light{display:none}html[data-theme="dark"] .oc-brand-mark-dark{display:block}
+.site-wordmark::after{content:"";width:1px;height:18px;margin-left:15px;background:var(--oc-line-strong)}
 .site-nav-links{min-width:0;height:100%;margin-left:22px;display:flex;align-items:center;gap:26px;overflow:visible;scrollbar-width:none}
 .site-nav-links::-webkit-scrollbar{display:none}
 .site-link{position:relative;height:100%;padding:0;border-radius:0;display:flex;align-items:center;gap:0;background:transparent;color:var(--oc-muted);font-size:12px;font-weight:500;text-decoration:none;box-shadow:none;transition:color .16s ease}
