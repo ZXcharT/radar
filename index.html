@@ -1008,10 +1008,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     </div>
 </div>
 
-<!-- MACRO_SUMMARY_START -->
-<section id="macro-summary" class="max-w-[1800px] mx-auto px-2 md:px-4 mb-4" hidden aria-label="宏观择时摘要"><a href="macro/" class="block bg-white border border-slate-200 rounded-xl p-3 text-sm text-slate-700 hover:border-slate-300"><b>宏观择时</b><span class="ml-3">行情离散度 <strong id="macro-value">--</strong></span><span class="ml-3">较昨日 <strong id="macro-d1">--</strong></span><span class="ml-3">近5日 <strong id="macro-d5">--</strong></span></a></section>
-<script id="macro-summary-state-reader">fetch('macro/state.json').then(r=>r.ok?r.json():Promise.reject()).then(s=>{const c=s.current.summary.crowding,f=n=>(n>=0?'+':'')+Number(n).toFixed(2);document.getElementById('macro-value').textContent=Number(c.value).toFixed(2);document.getElementById('macro-d1').textContent=f(c.change_1d);document.getElementById('macro-d5').textContent=f(c.change_5d);document.getElementById('macro-summary').hidden=false}).catch(()=>{});</script>
-<!-- MACRO_SUMMARY_END -->
 
 <script>
     // 异步加载数据，不阻塞页面渲染
