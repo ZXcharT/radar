@@ -204,14 +204,13 @@
         .oc-data-status::before { content: ""; width: 6px; height: 6px; background: #26946f; }
         .oc-local-notice { margin: 14px 0 0; padding: 9px 12px; display: flex; align-items: center; gap: 9px; border: 1px solid var(--oc-notice-border); background: var(--oc-notice-bg); color: var(--oc-notice-text); font-size: 12px; }
         .oc-local-notice strong { font-size: 10px; color: inherit; }
-        .oc-pagehead { min-height: 94px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 22px 0 20px; }
-        .oc-title h1 { margin: 0; color: var(--oc-ink); font-size: 29px; line-height: 1.15; font-weight: 710; letter-spacing: -0.045em; }
-        .oc-title p { margin: 7px 0 0; color: var(--oc-muted); font-size: 11px; }
+        .oc-pagehead { min-height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 0 16px; }
+        .oc-title { min-width: 0; display: flex; align-items: baseline; gap: 12px; }
+        .oc-title h1 { margin: 0; color: var(--oc-ink); font-size: 26px; line-height: 1.15; font-weight: 710; letter-spacing: -0.045em; white-space: nowrap; }
+        .oc-title p { margin: 0; color: var(--oc-muted); font-size: 10px; white-space: nowrap; }
         .oc-title strong { color: var(--oc-text-secondary); font-weight: 600; }
         .oc-head-actions { display: flex; align-items: center; gap: 18px; }
-        .oc-observed { display: flex; align-items: baseline; gap: 8px; color: var(--oc-quiet); font-size: 9px; }
-        .oc-observed strong { color: var(--oc-ink); font-size: 12px; font-weight: 620; font-variant-numeric: tabular-nums; }
-        .oc-export { height: 36px; padding: 0 16px; border: 1px solid var(--oc-ink); border-radius: 0; background: var(--oc-ink); color: var(--oc-on-solid); font-size: 11px; font-weight: 620; white-space: nowrap; }
+        .oc-export { height: 34px; padding: 0 14px; border: 1px solid var(--oc-ink); border-radius: 0; background: var(--oc-ink); color: var(--oc-on-solid); font-size: 10px; font-weight: 620; white-space: nowrap; }
         .oc-export:hover { opacity: .86; }
         .oc-toolbar { min-height: 49px; display: flex; align-items: center; gap: 0; border-top: 1px solid var(--oc-line-strong); border-bottom: 1px solid var(--oc-line-strong); }
         .oc-toolbar > * { min-width: 0; }
@@ -231,8 +230,8 @@
         .oc-tab { height: 32px; padding: 0 9px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--oc-muted); font-size: 10px; white-space: nowrap; }
         .oc-tab:hover { color: var(--oc-ink); }
         .oc-tab.is-active { border-bottom-color: var(--oc-ink); color: var(--oc-ink); font-weight: 650; }
-        .oc-date { margin-left: auto; display: flex; align-items: center; gap: 7px; color: var(--oc-muted); font-size: 9px; }
-        .oc-date select { height: 30px; padding: 0 4px; border: 0; border-bottom: 1px solid var(--oc-line-strong); border-radius: 0; background: transparent; color: var(--oc-ink); font-size: 10px; font-weight: 620; outline: none; }
+        .oc-date { display: flex; align-items: baseline; gap: 8px; color: var(--oc-quiet); font-size: 9px; white-space: nowrap; }
+        .oc-date select { height: 28px; padding: 0 4px; border: 0; border-bottom: 1px solid var(--oc-line-strong); border-radius: 0; background: transparent; color: var(--oc-ink); font-size: 11px; font-weight: 620; font-variant-numeric: tabular-nums; outline: none; }
         .oc-app-notice { margin-top: 10px; padding: 9px 11px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--oc-error-border); background: var(--oc-error-bg); color: var(--oc-error-text); font-size: 11px; }
         .oc-app-notice button { padding: 0; border: 0; background: transparent; color: inherit; font-size: 10px; text-decoration: underline; text-underline-offset: 3px; }
         .oc-rank-controls { margin: 12px 0 0; min-height: 42px; padding: 7px 0; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-bottom: 1px solid var(--oc-line); }
@@ -440,12 +439,11 @@
             #app.oc-app { width: 100%; max-width: 100%; padding: 0 16px 24px; overflow: hidden; }
             .oc-nav { margin: 0 -16px; padding: 0 16px; }
             .oc-data-status { display: none; }
-            .oc-pagehead { min-height: 84px; }
+            .oc-pagehead { min-height: 74px; }
             .oc-toolbar { align-items: flex-start; flex-wrap: wrap; gap: 8px 0; padding: 8px 0; }
             .oc-search-wrap { width: 100%; flex-basis: 100%; }
             .oc-control-set { margin-left: 0; padding-left: 0; padding-right: 12px; border-left: 0; }
             .oc-control-set + .oc-control-set { margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--oc-line); }
-            .oc-date { margin-left: auto; }
             .mobile-radar-only > div { min-width: 0; border-radius: 0 !important; box-shadow: none !important; border-color: var(--oc-line-strong) !important; }
             .mobile-radar-only .overflow-x-auto { width: 100%; max-width: 100%; min-width: 0; }
             .mobile-radar-only > div > div:first-child { border-radius: 0 !important; background: #f7f8f9 !important; }
@@ -459,16 +457,17 @@
             .oc-wordmark::after { display: none; }
             .oc-theme-toggle { position: absolute; top: 10px; right: 12px; margin-left: 0; }
             .oc-nav-links { width: 100%; height: 36px; margin-left: 0; gap: 20px; }
-            .oc-pagehead { min-height: 0; padding: 18px 0 14px; align-items: flex-start; flex-direction: column; gap: 12px; }
-            .oc-title h1 { font-size: 24px; }
+            .oc-pagehead { min-height: 0; padding: 16px 0 14px; align-items: flex-start; flex-direction: column; gap: 10px; }
+            .oc-title { flex-wrap: wrap; gap: 5px 10px; }
+            .oc-title h1 { font-size: 23px; }
+            .oc-title p { font-size: 9px; }
             .oc-head-actions { width: 100%; justify-content: space-between; }
             .oc-export { flex: 0 0 auto; }
             .oc-control-set { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; padding-right: 0; }
             .oc-control-set + .oc-control-set { margin-left: 0; padding-left: 0; border-left: 0; border-top: 1px solid var(--oc-line); }
             .oc-control-label { flex: 0 0 auto; }
             .oc-tab { flex: 1 0 auto; }
-            .oc-date { width: 100%; min-width: 0; margin-left: 0; padding-top: 6px; justify-content: flex-start; border-top: 1px solid var(--oc-line); }
-            .oc-date select { margin-left: auto; }
+            .oc-date { min-width: 0; }
             .mobile-radar-only .rounded-full { border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; }
             .oc-rank-controls { align-items: flex-start; flex-direction: column; }
         }
@@ -522,7 +521,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             <p>By <strong>知行图表交易</strong></p>
         </div>
         <div class="oc-head-actions">
-            <div class="oc-observed"><span>观察日期</span><strong>{{ selectedDate }}</strong></div>
+            <label class="oc-date"><span>数据日期</span><select v-model="selectedDate" @change="closeAllCalendars()"><option v-for="date in availableDates" :key="date" :value="date">{{ date }}</option></select></label>
             <button @click="exportToTDX" class="oc-export">导出勾选 ({{ selectedSectors.length }})</button>
         </div>
     </section>
@@ -547,7 +546,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             <span class="oc-control-label">排序指标</span>
             <button v-for="tab in tabs" @click="activeTab = tab.id; closeAllCalendars()" :class="{'is-active': activeTab === tab.id}" class="oc-tab">{{ tab.name }}</button>
         </div>
-        <label class="oc-date"><span>日期</span><select v-model="selectedDate" @change="closeAllCalendars()"><option v-for="date in availableDates" :key="date" :value="date">{{ date }}</option></select></label>
     </section>
 
     <div v-if="appNotice" class="oc-app-notice" role="alert"><span>{{ appNotice }}</span><button @click="appNotice = ''">关闭</button></div>
