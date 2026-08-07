@@ -200,8 +200,6 @@
         .oc-theme-toggle { height: 30px; margin-left: auto; padding: 0 9px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--oc-line-strong); border-radius: 0; background: transparent; color: var(--oc-muted); font-size: 10px; font-weight: 620; white-space: nowrap; }
         .oc-theme-toggle:hover { border-color: var(--oc-ink); color: var(--oc-ink); }
         .oc-theme-toggle svg { width: 13px; height: 13px; }
-        .oc-data-status { margin-left: 16px; display: flex; align-items: center; gap: 7px; color: var(--oc-muted); font-size: 10px; white-space: nowrap; }
-        .oc-data-status::before { content: ""; width: 6px; height: 6px; background: #26946f; }
         .oc-local-notice { margin: 14px 0 0; padding: 9px 12px; display: flex; align-items: center; gap: 9px; border: 1px solid var(--oc-notice-border); background: var(--oc-notice-bg); color: var(--oc-notice-text); font-size: 12px; }
         .oc-local-notice strong { font-size: 10px; color: inherit; }
         .oc-pagehead { min-height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 22px 16px; }
@@ -438,7 +436,6 @@
         @media (max-width: 1179px) {
             #app.oc-app { width: 100%; max-width: 100%; padding: 0 16px 24px; overflow: hidden; }
             .oc-nav { margin: 0; padding: 0 16px; }
-            .oc-data-status { display: none; }
             .oc-pagehead { min-height: 74px; padding-right: 16px; padding-left: 16px; }
             .oc-toolbar { align-items: flex-start; flex-wrap: wrap; gap: 8px 0; padding: 8px 0; }
             .oc-search-wrap { width: 100%; flex-basis: 100%; }
@@ -513,7 +510,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             <svg v-else aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" stroke-width="1.8"></circle><path stroke-linecap="round" stroke-width="1.8" d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
             <span>{{ theme === 'dark' ? '浅色' : '深色' }}</span>
         </button>
-        <div class="oc-data-status">数据已更新</div>
     </header>
     <!-- Compatibility boundary for the existing macro overlay injector. -->
     <div class="mb-5 oc-nav-boundary" hidden></div>
