@@ -368,6 +368,19 @@
         .detail-chart-rank { transform: translate(-50%,-145%); }
         .detail-chart-hit:hover .detail-chart-date, .detail-chart-hit:hover .detail-chart-rank, .detail-chart-hit.is-selected .detail-chart-date, .detail-chart-hit.is-selected .detail-chart-rank { opacity: 1; }
         .detail-chart-hit.is-selected .detail-chart-date, .detail-chart-hit.is-selected .detail-chart-rank { border-color: var(--oc-accent); color: var(--oc-accent); }
+        .constituent-strength { margin: 0 0 28px; }
+        .constituent-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--oc-line-strong); }
+        .constituent-date { color: var(--oc-quiet); font-family: var(--oc-mono); font-size: 9px; }
+        .constituent-direction { display: flex; border: 1px solid var(--oc-line-strong); }
+        .constituent-direction button { min-width: 48px; padding: 4px 8px; border: 0; background: transparent; color: var(--oc-quiet); font-size: 9px; font-weight: 680; }
+        .constituent-direction button + button { border-left: 1px solid var(--oc-line-strong); }
+        .constituent-direction button.is-active { background: var(--oc-ink); color: var(--oc-on-solid); }
+        .constituent-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--oc-line); }
+        .constituent-list li { display: grid; grid-template-columns: 18px minmax(0,1fr) auto; align-items: center; gap: 8px; min-height: 34px; border-bottom: 1px solid var(--oc-line); }
+        .constituent-rank { color: var(--oc-quiet); font-family: var(--oc-mono); font-size: 9px; }
+        .constituent-stock { min-width: 0; overflow: hidden; color: var(--oc-text-secondary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+        .constituent-stock strong { margin-right: 6px; color: var(--oc-ink); font-weight: 650; }
+        .constituent-value { color: var(--oc-ink); font-family: var(--oc-mono); font-size: 10px; font-weight: 680; }
         .similar-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); border-top: 1px solid var(--oc-line-strong); }
         .similar-item { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border: 0; border-bottom: 1px solid var(--oc-line); border-radius: 0; background: transparent; color: var(--oc-ink); text-align: left; }
         .similar-item:nth-child(odd) { padding-right: 16px; }
@@ -390,6 +403,9 @@
             .detail-trend-head { align-items: flex-start; flex-direction: column; }
             .detail-tabs { width: 100%; justify-content: space-between; gap: 8px; }
             .detail-chart { height: 156px; }
+            .constituent-toolbar { align-items: flex-start; flex-direction: column; }
+            .constituent-direction { width: 100%; }
+            .constituent-direction button { flex: 1; }
             .similar-list { grid-template-columns: 1fr; }
             .similar-item:nth-child(odd), .similar-item:nth-child(even) { padding: 10px 0; border-left: 0; }
         }
@@ -571,7 +587,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         <div class="oc-search-wrap">
             <input v-model="searchQuery" @focus="showDropdown = true" @blur="hideDropdownDelay" type="text" placeholder="搜索板块名称或代码" class="oc-search">
             <div v-if="showDropdown && searchResults.length > 0" class="oc-search-results">
-                <button v-for="res in searchResults" :key="res.ts_code" @mousedown.prevent="openModal(res)" class="oc-search-result">
+                <button v-for="res in searchResults" :key="res.ts_code" @mousedown.prevent="openModal(res, 'top')" class="oc-search-result">
                     <span><span class="oc-search-name">{{ cleanName(res.index_name) }}</span><span class="oc-search-code">{{ res.ts_code }}</span></span>
                     <span class="oc-search-type">{{ res.type.replace('板块', '') }}</span>
                 </button>
@@ -643,7 +659,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     <template v-if="row.top">
                         <input type="checkbox" v-model="selectedSectors" :value="row.top.index_name" @click.stop aria-label="勾选板块">
                         <span class="mirror-rank">{{ mirrorRank(row.top) }}</span>
-                        <button class="mirror-name" @click.stop="openModal(row.top)">{{ cleanName(row.top.index_name) }}</button>
+                        <button class="mirror-name" @click.stop="openModal(row.top, 'top')">{{ cleanName(row.top.index_name) }}</button>
                     </template>
                 </div>
                 <div class="mirror-cell" :class="row.top ? mirrorValueClass(row.top.pct_change, {kind:'signed'}) : ''">{{ row.top ? formatPctChange(row.top.pct_change) : '' }}</div>
@@ -662,7 +678,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 <div class="mirror-cell" :class="row.bot ? mirrorValueClass(row.bot.pct_change, {kind:'signed'}) : ''">{{ row.bot ? formatPctChange(row.bot.pct_change) : '' }}</div>
                 <div class="mirror-cell mirror-board right">
                     <template v-if="row.bot">
-                        <button class="mirror-name" @click.stop="openModal(row.bot)">{{ cleanName(row.bot.index_name) }}</button>
+                        <button class="mirror-name" @click.stop="openModal(row.bot, 'bottom')">{{ cleanName(row.bot.index_name) }}</button>
                         <span class="mirror-rank">{{ mirrorRank(row.bot) }}</span>
                         <input type="checkbox" v-model="selectedSectors" :value="row.bot.index_name" @click.stop aria-label="勾选板块">
                     </template>
@@ -750,7 +766,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                                 <div class="col-span-1 text-center flex-center-y justify-center">
                                     <span class="rank-tag bg-rank-up">{{ item[(activeTab === 'RankChange' ? rankChangeMetric : activeTab) + '_RankPos'] }}</span>
                                 </div>
-                                <div class="col-span-2 text-left pl-2 font-bold text-slate-800 truncate pr-2 flex-center-y hover:text-blue-600 transition" @click.stop="openModal(item)">{{ cleanName(item.index_name) }}</div>
+                                <div class="col-span-2 text-left pl-2 font-bold text-slate-800 truncate pr-2 flex-center-y hover:text-blue-600 transition" @click.stop="openModal(item, 'top')">{{ cleanName(item.index_name) }}</div>
                                 <div class="col-span-2 text-center text-sm font-semibold flex-center-y justify-center" :class="item.pct_change >= 0 ? 'text-up' : 'text-down'">{{ Number.isFinite(item.pct_change) ? ((item.pct_change > 0 ? '+' : '') + item.pct_change.toFixed(2) + '%') : '-' }}</div>
                                 
                                 <template v-if="activeTab === 'RankChange'">
@@ -877,7 +893,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                                 <div class="col-span-1 text-center flex-center-y justify-center">
                                     <span class="rank-tag bg-rank-down">{{ item[(activeTab === 'RankChange' ? rankChangeMetric : activeTab) + '_RankPos'] }}</span>
                                 </div>
-                                <div class="col-span-2 text-left pl-2 font-bold text-slate-800 truncate pr-2 flex-center-y hover:text-green-600 transition" @click.stop="openModal(item)">{{ cleanName(item.index_name) }}</div>
+                                <div class="col-span-2 text-left pl-2 font-bold text-slate-800 truncate pr-2 flex-center-y hover:text-green-600 transition" @click.stop="openModal(item, 'bottom')">{{ cleanName(item.index_name) }}</div>
                                 <div class="col-span-2 text-center text-sm font-semibold flex-center-y justify-center" :class="item.pct_change >= 0 ? 'text-up' : 'text-down'">{{ Number.isFinite(item.pct_change) ? ((item.pct_change > 0 ? '+' : '') + item.pct_change.toFixed(2) + '%') : '-' }}</div>
                                 
                                 <template v-if="activeTab === 'RankChange'">
@@ -1035,6 +1051,31 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     </div>
                 </div>
 
+                <section class="constituent-strength" aria-label="成分强弱">
+                    <div class="detail-trend-head">
+                        <h3 class="detail-section-title">成分强弱 · 个股</h3>
+                        <div class="detail-tabs" role="tablist" aria-label="个股排行指标">
+                            <button v-for="metric in constituentMetrics" :key="metric.id" @click="constituentMetric=metric.id" :class="{'is-active': constituentMetric===metric.id}" class="detail-tab" role="tab" :aria-selected="constituentMetric===metric.id">{{ metric.name }}</button>
+                        </div>
+                    </div>
+                    <p class="detail-metric-sub">主买净额为个股 L2 主动买卖净额（moneyflow.net_mf_amount），不等同主力净额。</p>
+                    <div class="constituent-toolbar">
+                        <span class="constituent-date">{{ constituentDateLabel }} · {{ constituentMetricUnit }}</span>
+                        <div class="constituent-direction" role="tablist" aria-label="个股排行方向">
+                            <button @click="constituentDirection='top'" :class="{'is-active':constituentDirection==='top'}" role="tab" :aria-selected="constituentDirection==='top'">前 5</button>
+                            <button @click="constituentDirection='bottom'" :class="{'is-active':constituentDirection==='bottom'}" role="tab" :aria-selected="constituentDirection==='bottom'">后 5</button>
+                        </div>
+                    </div>
+                    <div v-if="constituentStatus" class="similar-empty">{{ constituentStatus }}</div>
+                    <ol v-else class="constituent-list">
+                        <li v-for="(row,index) in constituentRows" :key="row.stock_code">
+                            <span class="constituent-rank">{{ index + 1 }}</span>
+                            <span class="constituent-stock"><strong>{{ row.stock_name || '—' }}</strong>{{ row.stock_code }}</span>
+                            <b class="constituent-value">{{ formatConstituentValue(row.value) }}</b>
+                        </li>
+                    </ol>
+                </section>
+
                 <h3 class="detail-section-title">成分近似板块 · 重合度</h3>
                 <div v-if="similarSectors.length" class="similar-list">
                     <button v-for="sim in similarSectors" :key="sim.name" @click="openModalByName(sim.name)" class="similar-item">
@@ -1080,7 +1121,14 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 showDropdown: false,
                 modalData: null,
                 modalActiveTab: 'Swing',
-                chartSelectedDate: null, 
+                chartSelectedDate: null,
+                constituentManifest: null,
+                constituentDocuments: {},
+                constituentDetail: null,
+                constituentMetric: 'pct_change',
+                constituentDirection: 'top',
+                constituentLoadState: 'idle',
+                constituentRequestToken: 0,
                 similarSectors: [],
                 rankChangeMetric: 'Swing', 
                 rankChangeDays: 1,
@@ -1197,6 +1245,17 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 let list = this.processedData.filter(d => d[this.activeTab + '_RankPct'] <= 10);
                 let defKey = this.activeTab === 'Amount' ? 'Amount_Raw_BN' : this.activeTab + '_Score';
                 return this.applySort(list, 'bot', defKey, 'asc');
+            },
+            constituentMetrics() { return [{id:'pct_change',name:'涨跌幅',unit:'%'},{id:'main_net_amount',name:'主力净额',unit:'亿元'},{id:'active_buy_net_amount',name:'主买净额',unit:'亿元'}]; },
+            constituentMetricEntry() { return this.constituentDetail && this.constituentDetail.metrics ? this.constituentDetail.metrics[this.constituentMetric] : null; },
+            constituentRows() { var metric=this.constituentMetricEntry; return metric && metric.status==='available' ? (metric[this.constituentDirection] || []) : []; },
+            constituentMetricUnit() { var metric=this.constituentMetrics.find(function(item){ return item.id===this.constituentMetric; }.bind(this)); return metric ? metric.unit : ''; },
+            constituentDateLabel() { return (this.chartSelectedDate || this.selectedDate || '').replaceAll('-', '.'); },
+            constituentStatus() {
+                if (this.constituentLoadState==='loading') return '正在读取该板块的个股排行…';
+                if (this.constituentLoadState==='error') return '个股排行加载失败，板块主数据不受影响。';
+                if (this.constituentLoadState==='unavailable' || !this.constituentDetail) return '该日期的个股排行暂不可用。';
+                return this.constituentMetricEntry && this.constituentMetricEntry.status==='available' ? '' : '有效样本不足 10，当前指标不可用。';
             },
             currentModalData() {
                 if (!this.modalData) return null;
@@ -1413,16 +1472,19 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             async toggleChartDate(dateStr) {
                 if (this.chartSelectedDate === dateStr) {
                     this.chartSelectedDate = null;
+                    if (this.modalData) this.loadConstituentRanking(this.modalData);
                     return;
                 }
                 try {
                     await this.loadDateRecords(dateStr);
                     this.chartSelectedDate = dateStr;
+                    if (this.modalData) this.loadConstituentRanking(this.modalData);
                     this.appNotice = '';
                 } catch (err) {
                     try {
                         await this.useLegacyFallback();
                         this.chartSelectedDate = dateStr;
+                        if (this.modalData) this.loadConstituentRanking(this.modalData);
                         this.appNotice = '';
                     } catch (fallbackError) {
                         this.reportAppError('历史日期加载失败，请稍后重试。', fallbackError);
@@ -1498,8 +1560,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     return state.order === 'desc' ? valB - valA : valA - valB;
                 });
             },
-            async openModal(sectorObj) {
+            async openModal(sectorObj, direction) {
                 this.modalData = sectorObj;
+                this.constituentDirection = direction === 'bottom' ? 'bottom' : 'top';
+                this.constituentDetail = null;
+                this.constituentLoadState = 'loading';
                 this.modalActiveTab = this.activeTab === 'RankChange' ? this.rankChangeMetric : this.activeTab;
                 this.chartSelectedDate = null;
                 this.showDropdown = false;
@@ -1517,13 +1582,46 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     }
                 }
                 this.calculateSimilarSectors(sectorObj.index_name);
+                this.loadConstituentRanking(sectorObj);
             },
             openModalByName(sectorNameWithSuffix) {
                 const target = this.rawData.find(d => d.trade_date === this.selectedDate && 
                     (d.index_name === sectorNameWithSuffix || d.index_name.startsWith(sectorNameWithSuffix + ' ')));
                 if (target) this.openModal(target);
             },
-            closeModal() { this.modalData = null; },
+            closeModal() { this.modalData = null; this.constituentDetail = null; this.constituentLoadState = 'idle'; this.constituentRequestToken += 1; },
+            formatConstituentValue(value) {
+                if (!Number.isFinite(value)) return '--';
+                var suffix = this.constituentMetric === 'pct_change' ? '%' : ' 亿';
+                return (value >= 0 ? '+' : '') + value.toFixed(2) + suffix;
+            },
+            async loadConstituentRanking(sectorObj) {
+                var token = ++this.constituentRequestToken;
+                this.constituentDetail = null;
+                this.constituentLoadState = 'loading';
+                try {
+                    var manifest = this.constituentManifest || await fetchJson('sector_rankings/manifest.json', function(x){ return x && x.schema_version==='onechart_sector_stock_rankings_v1' && x.systems; });
+                    this.constituentManifest = manifest;
+                    var current = manifest.systems.radar && manifest.systems.radar.current;
+                    var ref = current && current.sectors && current.sectors[sectorObj.ts_code];
+                    if (!ref || !ref.path) throw new Error('Missing radar sector ranking reference');
+                    var document = this.constituentDocuments[sectorObj.ts_code];
+                    if (!document) {
+                        document = await fetchJson(ref.path, function(x){ return x && x.system==='radar' && x.sector_code===sectorObj.ts_code && x.entries; });
+                        this.constituentDocuments[sectorObj.ts_code] = document;
+                    }
+                    if (token !== this.constituentRequestToken || !this.modalData || this.modalData.ts_code !== sectorObj.ts_code) return;
+                    var date = (this.chartSelectedDate || this.selectedDate || '').replaceAll('-', '');
+                    var slot = document.entries && document.entries[date] && document.entries[date]['1'];
+                    this.constituentDetail = slot || null;
+                    this.constituentLoadState = slot ? 'ready' : 'unavailable';
+                } catch (_) {
+                    if (token === this.constituentRequestToken) {
+                        this.constituentDetail = null;
+                        this.constituentLoadState = 'error';
+                    }
+                }
+            },
             loadDateRecords(dateStr) {
                 if (this.recordsByDate[dateStr]) return Promise.resolve(this.recordsByDate[dateStr]);
                 if (this.loadingPromises[dateStr]) return this.loadingPromises[dateStr];
