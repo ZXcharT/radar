@@ -1,14 +1,14 @@
 # OneChart Public
 
-OneChart 的公开静态站点仓库，用于发布板块资金雷达、实时资金页面、宏观图表及其浏览器端公开数据。
+OneChart 的公开静态站点仓库，用于发布板块资金雷达、宏观图表及其浏览器端公开数据。
 
 ## 仓库定位
 
 本仓库只保存可公开部署的静态产物：
 
 - `index.html`：板块资金雷达；
-- `realtime.html`：实时资金页面；
 - `macro/`：宏观与高切低等公开页面；
+- `realtime.html`：历史遗留页面，已停止维护，不属于当前产品入口；
 - `assets/`：浏览器端静态资源；
 - `radar_data/`、JSON 与 JavaScript 数据文件：页面使用的公开数据；
 - `radar_manifest.json`：公开数据清单与版本引用。
