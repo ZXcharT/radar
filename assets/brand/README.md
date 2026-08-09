@@ -1,6 +1,6 @@
 # OneChart brand assets
 
-These public display assets are exact or derived exports of the canonical OneChart brand set established in private source commit `ce0b98296133dead54a61a2ebe2cf2a612cbb2a6`.
+These files are official public OneChart brand assets. The SHA-256 values below verify the published files.
 
 Canonical asset hashes:
 
