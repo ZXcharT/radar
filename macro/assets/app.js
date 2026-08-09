@@ -184,7 +184,7 @@ function rightAxisConfig(){
   const range=scaleMode==="fill"?{min:-55,max:55}:rightAxisRange;
   return{
     type:"value",min:range.min,max:range.max,name:"",
-    axisLabel:{show:!hidden,color:theme.axis,formatter:value=>String(Math.round(100*(Math.exp(value/100)-1)))},
+    axisLabel:{show:!hidden,color:theme.axis,fontSize:11,formatter:value=>String(Math.round(100*(Math.exp(value/100)-1)))},
     axisTick:{show:!hidden,lineStyle:{color:theme.axisLine}},axisLine:{show:!hidden,lineStyle:{color:theme.axisLine}},splitLine:{show:false}
   };
 }
@@ -210,9 +210,9 @@ function draw(){
   chart.setOption({
     animation:false,backgroundColor:"transparent",color:[theme.crowding,...chosen.map(seriesColor)],legend:{show:false},
     grid:{left:64,right:72,top:window.innerWidth<=420?56:48,bottom:86,containLabel:false},tooltip:{trigger:"axis",confine:true,formatter:tooltip,backgroundColor:theme.tooltipBg,borderColor:theme.tooltipBorder,borderWidth:1,padding:[8,10],textStyle:{color:theme.tooltipText,fontSize:12,fontWeight:700},extraCssText:`border-radius:2px;box-shadow:${theme.tooltipShadow};`},
-    xAxis:{type:"category",data:data.dates,boundaryGap:false,axisLabel:{color:theme.axis,formatter:value=>formatDate(value)},axisTick:{show:false},axisLine:{lineStyle:{color:theme.axisLine}}},
+    xAxis:{type:"category",data:data.dates,boundaryGap:false,axisLabel:{color:theme.axis,fontSize:11,formatter:value=>formatDate(value)},axisTick:{show:false},axisLine:{lineStyle:{color:theme.axisLine}}},
     yAxis:[
-      {type:"value",name:"",min:15,max:axis.max,axisLabel:{color:theme.axis,formatter:value=>Math.round(value)===200?"200":""},axisTick:{show:false},axisLine:{lineStyle:{color:theme.axisLine}},splitLine:{lineStyle:{color:theme.splitLine}}},
+      {type:"value",name:"",min:15,max:axis.max,axisLabel:{color:theme.axis,fontSize:11,formatter:value=>Math.round(value)===200?"200":""},axisTick:{show:false},axisLine:{lineStyle:{color:theme.axisLine}},splitLine:{lineStyle:{color:theme.splitLine}}},
       rightAxisConfig()
     ],
     dataZoom:[

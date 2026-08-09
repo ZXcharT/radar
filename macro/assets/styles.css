@@ -199,3 +199,9 @@ html[data-theme="dark"] .series-chip.active{background:color-mix(in srgb,var(--s
   .primary-stat,.percentile-card{grid-column:1/-1;border-right:0;border-bottom:1px solid var(--oc-line)}.stats .stat-card:nth-child(3){border-right:1px solid var(--oc-line)}
   .chart-toolbar{background:var(--oc-paper)}
 }
+
+/* Semantic readability uplift: titles and critical metrics remain unchanged. */
+.theme-toggle,.header-date span,.header-date strong,.switch-side,#restore-scale,.series-chip,.meaning-copy p,.meaning-copy strong{font-size:12px;line-height:1.4}
+.brand-chip,.method-reference,.stat-card p,.scale-status,.axis-title,.interaction-hints,.oc-title p{font-size:11px;line-height:1.45}
+.header-date{font-size:10.5px;line-height:1.4}
+.interaction-hints{margin-top:4px}
