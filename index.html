@@ -1062,10 +1062,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     <div class="constituent-toolbar">
                         <span class="constituent-date">{{ constituentDateLabel }} · {{ constituentMetricUnit }}</span>
                         <div class="constituent-direction" role="tablist" aria-label="个股排行方向">
-                            <button @click="constituentDirection='top'" :class="{'is-active':constituentDirection==='top'}" role="tab" :aria-selected="constituentDirection==='top'">前 5</button>
-                            <button @click="constituentDirection='bottom'" :class="{'is-active':constituentDirection==='bottom'}" role="tab" :aria-selected="constituentDirection==='bottom'">后 5</button>
+                            <button @click="constituentDirection='top'" :class="{'is-active':constituentDirection==='top'}" role="tab" :aria-selected="constituentDirection==='top'">{{ constituentLimited ? '从高到低' : '前 5' }}</button>
+                            <button @click="constituentDirection='bottom'" :class="{'is-active':constituentDirection==='bottom'}" role="tab" :aria-selected="constituentDirection==='bottom'">{{ constituentLimited ? '从低到高' : '后 5' }}</button>
                         </div>
                     </div>
+                    <p v-if="constituentNotice" class="detail-metric-sub">{{ constituentNotice }}</p>
                     <div v-if="constituentStatus" class="similar-empty">{{ constituentStatus }}</div>
                     <ol v-else class="constituent-list">
                         <li v-for="(row,index) in constituentRows" :key="row.stock_code">
@@ -1248,14 +1249,16 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             },
             constituentMetrics() { return [{id:'pct_change',name:'涨跌幅',unit:'%'},{id:'main_net_amount',name:'主力净额',unit:'亿元'},{id:'active_buy_net_amount',name:'主买净额',unit:'亿元'}]; },
             constituentMetricEntry() { return this.constituentDetail && this.constituentDetail.metrics ? this.constituentDetail.metrics[this.constituentMetric] : null; },
-            constituentRows() { var metric=this.constituentMetricEntry; return metric && metric.status==='available' ? (metric[this.constituentDirection] || []) : []; },
+            constituentLimited() { return !!(this.constituentMetricEntry && this.constituentMetricEntry.status==='available_limited_sample'); },
+            constituentRows() { var metric=this.constituentMetricEntry; return metric && (metric.status==='available' || metric.status==='available_limited_sample') ? (metric[this.constituentDirection] || []) : []; },
             constituentMetricUnit() { var metric=this.constituentMetrics.find(function(item){ return item.id===this.constituentMetric; }.bind(this)); return metric ? metric.unit : ''; },
             constituentDateLabel() { return (this.chartSelectedDate || this.selectedDate || '').replaceAll('-', '.'); },
+            constituentNotice() { var metric=this.constituentMetricEntry; return metric && metric.status==='available_limited_sample' ? '有效样本 '+metric.sample_size+' 个，以下展示全部标的，不形成前 5 / 后 5 排名。' : ''; },
             constituentStatus() {
                 if (this.constituentLoadState==='loading') return '正在读取该板块的个股排行…';
                 if (this.constituentLoadState==='error') return '个股排行加载失败，板块主数据不受影响。';
                 if (this.constituentLoadState==='unavailable' || !this.constituentDetail) return '该日期的个股排行暂不可用。';
-                return this.constituentMetricEntry && this.constituentMetricEntry.status==='available' ? '' : '有效样本不足 10，当前指标不可用。';
+                return this.constituentMetricEntry && (this.constituentMetricEntry.status==='available' || this.constituentMetricEntry.status==='available_limited_sample') ? '' : '当前指标没有有效样本。';
             },
             currentModalData() {
                 if (!this.modalData) return null;
