@@ -1669,19 +1669,31 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 this.constituentDetail = null;
                 this.constituentLoadState = 'loading';
                 try {
-                    var manifest = this.constituentManifest || await fetchJson('sector_rankings/manifest.json', function(x){ return x && x.schema_version==='onechart_sector_stock_rankings_v1' && x.systems; });
+                    var manifest = this.constituentManifest || await fetchJson('sector_rankings/manifest.json', function(x){ return x && ['onechart_sector_stock_rankings_v1','onechart_sector_stock_rankings_v2'].includes(x.schema_version) && x.systems; }, { cache: 'no-store' });
                     this.constituentManifest = manifest;
                     var current = manifest.systems.radar && manifest.systems.radar.current;
-                    var ref = current && current.sectors && current.sectors[sectorObj.ts_code];
-                    if (!ref || !ref.path) throw new Error('Missing radar sector ranking reference');
-                    var document = this.constituentDocuments[sectorObj.ts_code];
-                    if (!document) {
-                        document = await fetchJson(ref.path, function(x){ return x && x.system==='radar' && x.sector_code===sectorObj.ts_code && x.entries; });
-                        this.constituentDocuments[sectorObj.ts_code] = document;
+                    var date = (this.chartSelectedDate || this.selectedDate || '').replaceAll('-', '');
+                    var slot = null;
+                    if (manifest.schema_version === 'onechart_sector_stock_rankings_v2') {
+                        var dateRef = current && current.date_files && current.date_files[date];
+                        if (!dateRef || !dateRef.path) throw new Error('Missing radar date ranking reference');
+                        var dateDocument = this.constituentDocuments[dateRef.path];
+                        if (!dateDocument) {
+                            dateDocument = await fetchJson(dateRef.path, function(x){ return x && x.schema_version==='onechart_sector_stock_rankings_date_v2' && x.system==='radar' && x.date===date && x.sectors; });
+                            this.constituentDocuments[dateRef.path] = dateDocument;
+                        }
+                        slot = dateDocument.sectors && dateDocument.sectors[sectorObj.ts_code] && dateDocument.sectors[sectorObj.ts_code]['1'];
+                    } else {
+                        var ref = current && current.sectors && current.sectors[sectorObj.ts_code];
+                        if (!ref || !ref.path) throw new Error('Missing radar sector ranking reference');
+                        var document = this.constituentDocuments[sectorObj.ts_code];
+                        if (!document) {
+                            document = await fetchJson(ref.path, function(x){ return x && x.system==='radar' && x.sector_code===sectorObj.ts_code && x.entries; });
+                            this.constituentDocuments[sectorObj.ts_code] = document;
+                        }
+                        slot = document.entries && document.entries[date] && document.entries[date]['1'];
                     }
                     if (token !== this.constituentRequestToken || !this.modalData || this.modalData.ts_code !== sectorObj.ts_code) return;
-                    var date = (this.chartSelectedDate || this.selectedDate || '').replaceAll('-', '');
-                    var slot = document.entries && document.entries[date] && document.entries[date]['1'];
                     this.constituentDetail = slot || null;
                     this.constituentLoadState = slot ? 'ready' : 'unavailable';
                 } catch (_) {
@@ -1890,8 +1902,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         }, {});
     }
 
-    function fetchJson(path, validator) {
-        return fetch(path).then(function(response) {
+    function fetchJson(path, validator, options) {
+        return fetch(path, options).then(function(response) {
             if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + path);
             return response.json();
         }).then(function(data) {
@@ -1910,7 +1922,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
     function requestLegacyFallback() {
         if (legacyFallbackPromise) return legacyFallbackPromise;
-        legacyFallbackPromise = fetchJson('radar_data_latest.json', isLegacyPayload).then(function(data) {
+        legacyFallbackPromise = fetchJson('radar_data_latest.json', isLegacyPayload, { cache: 'no-store' }).then(function(data) {
             window.RADAR_DATA = data.RADAR_DATA;
             window.AVAILABLE_DATES = data.AVAILABLE_DATES;
             window.LATEST_DATE = data.LATEST_DATE;
@@ -1933,7 +1945,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         return manifest && manifest.schema_version === 1 && Array.isArray(manifest.AVAILABLE_DATES) &&
             manifest.files && manifest.files.dates && manifest.LATEST_DATE &&
             typeof manifest.files.dates[manifest.LATEST_DATE] === 'string';
-    }).then(function(manifest) {
+    }, { cache: 'no-store' }).then(function(manifest) {
         window._manifest = manifest;
         window.AVAILABLE_DATES = manifest.AVAILABLE_DATES;
         window.LATEST_DATE = manifest.LATEST_DATE;
