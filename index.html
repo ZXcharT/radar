@@ -5,25 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>板块资金雷达 | OneChart</title>
     <meta name="description" content="观察板块资金流向、强弱变化与市场主线。">
-    <link rel="icon" type="image/svg+xml" href="/assets/brand/onechart-favicon.svg">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="OneChart">
-    <meta property="og:title" content="板块资金雷达 | OneChart">
-    <meta property="og:description" content="观察板块资金流向、强弱变化与市场主线。">
-    <meta property="og:url" content="https://onechart.top/">
-    <meta property="og:image" content="https://onechart.top/assets/brand/onechart-og.png">
-    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/svg+xml" href="/assets/cashflow/ec49a28fd3b6/favicon.svg">
+    
+    
+    
+    
+    
+    
+    
     <script>
         (function() {
-            var theme = 'light';
+            var theme = 'dark';
             try {
-                var savedTheme = localStorage.getItem('onechart-theme');
+                var savedTheme = localStorage.getItem('onechart.cashflow.theme');
                 if (savedTheme === 'dark' || savedTheme === 'light') theme = savedTheme;
             } catch (error) {}
             document.documentElement.dataset.theme = theme;
             document.documentElement.style.colorScheme = theme;
         })();
     </script>
+    <script src="assets/cashflow/ec49a28fd3b6/theme.js"></script>
+    <script src="assets/cashflow/ec49a28fd3b6/search.js"></script>
     <link rel="stylesheet" href="assets/tailwind.5d4ecc19b1b9.css">
     <script src="assets/vendor/vue.global.prod.3.5.18.js"></script>
     <style>
@@ -591,16 +593,20 @@
         .mobile-radar-only .data-row > div:nth-child(4) { font-size: 12px !important; line-height: 1.4; }
         .mobile-radar-only .rank-tag { font-size: 12px; }
     </style>
+<link rel="stylesheet" href="assets/cashflow/ec49a28fd3b6/ui.css">
+<link rel="stylesheet" href="assets/cashflow/ec49a28fd3b6/controls.css">
+<script defer src="assets/cashflow/ec49a28fd3b6/ui.js"></script>
 </head>
-<body class="oc-radar-page">
-<!--
-THESIS: OneChart radar is one continuous capital-polarity workspace, not a dashboard assembled from decorated cards.
-OWN-WORLD: white data plane, graphite typography, square controls, one central metric axis, semantic red and green only as measured data.
-STORY: choose a date and metric, scan strongest and weakest sectors around the center axis, then inspect history or export constituents.
-FIRST VIEWPORT: quiet product navigation, compact controls, desktop mirrored rankings, and independent stacked lists on narrow screens.
-FORM: mirrored capital axis on desktop; card borders, colored container edges, pills, gradients, and decorative shadows are excluded.
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md.
--->
+<body class="oc-radar-page" data-cashflow-ui="ec49a28fd3b6">
+
+<header class="site-header"><div class="site-inner">
+<a class="site-brand" href="/" aria-label="OneChart 首页"><img class="logo-day" src="assets/cashflow/ec49a28fd3b6/logo-black.svg" alt="OneChart"><img class="logo-night" src="assets/cashflow/ec49a28fd3b6/logo-white.svg" alt="OneChart"></a>
+<nav class="site-links" aria-label="OneChart 功能导航"><a href="/" aria-current="page">资金流</a><a href="/macro/">离散度</a><a href="https://amv.onechartlab.com/">活跃度</a><a href="https://bs.onechart.top/">仓位计算</a><a href="https://simu.onechart.top/">概率模拟</a></nav>
+<button id="theme-toggle" class="site-theme" type="button" title="切换至日间模式" aria-label="切换至日间模式"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4L19 5"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20.5 14a8.5 8.5 0 0 1-10.5-10.5A8.5 8.5 0 1 0 20.5 14Z"/></svg></button>
+</div></header>
+
+
+
 
 <!-- 数据加载中遮罩 -->
 <div id="loading-screen">
@@ -609,560 +615,17 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     <div class="sub">首次加载约需数秒，请耐心等待</div>
 </div>
 
-<div id="app" v-cloak class="oc-app relative">
-    <header class="oc-nav" data-layout="navOuter">
-        <div class="oc-layout-inner oc-nav-inner" data-layout="navInner">
-        <a href="/" class="oc-wordmark" aria-label="OneChart 首页">
-            <img class="oc-brand-lockup oc-brand-lockup-light" src="assets/brand/onechart-lockup-horizontal-black.svg" alt="">
-            <img class="oc-brand-lockup oc-brand-lockup-dark" src="assets/brand/onechart-lockup-horizontal-white.svg" alt="">
-        </a>
-        <nav class="oc-nav-links hide-scrollbar" aria-label="OneChart 功能导航">
-            <a href="/" class="oc-nav-link is-active">板块资金雷达</a>
-            <a href="/macro/" class="oc-nav-link">宏观择时</a>
-            <a href="https://bs.onechart.top" class="oc-nav-link">仓位计算器</a>
-            <a href="https://simu.onechart.top" class="oc-nav-link">交易模拟器</a>
-        </nav>
-        <button @click="toggleTheme" class="oc-theme-toggle" type="button" :aria-pressed="theme === 'dark'" :aria-label="theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'" :title="theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'">
-            <svg v-if="theme === 'light'" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12.8A8.5 8.5 0 1111.2 3 7 7 0 0021 12.8z"></path></svg>
-            <svg v-else aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" stroke-width="1.8"></circle><path stroke-linecap="round" stroke-width="1.8" d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
-            <span>{{ theme === 'dark' ? '浅色' : '深色' }}</span>
-        </button>
-        </div>
-    </header>
-    <!-- Compatibility boundary for the existing macro overlay injector. -->
-    <div class="mb-5 oc-nav-boundary" hidden></div>
-
-    <div class="oc-content-shell" data-layout="contentShell">
-    <div v-if="isLocalData" class="oc-local-notice">
-        <strong>本地聚合</strong>
-        <span>本日板块数据由个股本地聚合计算，涨跌幅暂不显示（"-"）</span>
-    </div>
-
-    <section class="oc-pagehead" data-layout="pageHeaderInner">
-        <div class="oc-title">
-            <h1>板块资金雷达</h1>
-            <p>识别主线资金流向与趋势，对比板块强弱</p>
-        </div>
-        <div class="oc-head-actions">
-            <label class="oc-date"><span>数据日期</span><select v-model="selectedDate" @change="closeAllCalendars()"><option v-for="date in availableDates" :key="date" :value="date">{{ date }}</option></select></label>
-            <button @click="exportToTDX" class="oc-export">导出勾选 ({{ selectedSectors.length }})</button>
-        </div>
-    </section>
-
-    <section class="oc-toolbar" aria-label="资金雷达筛选条件">
-        <div class="oc-search-wrap">
-            <input v-model="searchQuery" @focus="showDropdown = true" @blur="hideDropdownDelay" type="text" placeholder="搜索板块名称或代码" class="oc-search">
-            <div v-if="showDropdown && searchResults.length > 0" class="oc-search-results">
-                <button v-for="res in searchResults" :key="res.ts_code" @mousedown.prevent="openModal(res, 'top')" class="oc-search-result">
-                    <span><span class="oc-search-name">{{ cleanName(res.index_name) }}</span><span class="oc-search-code">{{ res.ts_code }}</span></span>
-                    <span class="oc-search-type">{{ res.type.replace('板块', '') }}</span>
-                </button>
-            </div>
-            <div v-else-if="showDropdown && searchQuery.trim()" class="oc-search-empty">未找到匹配板块</div>
-        </div>
-        <div class="oc-control-set">
-            <span class="oc-control-label">类型</span>
-            <button @click="activeType = '概念板块'; closeAllCalendars()" :class="{'is-active': activeType === '概念板块'}" class="oc-tab">概念</button>
-            <button @click="activeType = '行业板块'; closeAllCalendars()" :class="{'is-active': activeType === '行业板块'}" class="oc-tab">行业</button>
-        </div>
-        <div class="oc-control-set oc-sort-control hide-scrollbar">
-            <span class="oc-control-label">排序指标</span>
-            <button v-for="tab in tabs" @click="activeTab = tab.id; closeAllCalendars()" :class="{'is-active': activeTab === tab.id}" class="oc-tab">{{ tab.name }}</button>
-        </div>
-    </section>
-
-    <div v-if="appNotice" class="oc-app-notice" role="alert"><span>{{ appNotice }}</span><button @click="appNotice = ''">关闭</button></div>
-
-    <section v-if="activeTab === 'RankChange'" class="oc-rank-controls">
-        <div class="oc-rank-control-group">
-            <label>排序基准</label>
-            <button @click="rankChangeMetric = 'Swing'" :class="{'is-active': rankChangeMetric === 'Swing'}" class="oc-tab">波段率</button>
-            <button @click="rankChangeMetric = 'Ratio'" :class="{'is-active': rankChangeMetric === 'Ratio'}" class="oc-tab">单日率</button>
-            <button @click="rankChangeMetric = 'Amount'" :class="{'is-active': rankChangeMetric === 'Amount'}" class="oc-tab">单日额</button>
-        </div>
-        <div class="oc-rank-control-group">
-            <label for="rank-change-days">统计天数</label>
-            <select id="rank-change-days" v-model="rankChangeDays">
-                <option :value="1">近 1 天（相比昨日）</option>
-                <option :value="2">近 2 天</option>
-                <option :value="3">近 3 天</option>
-                <option :value="4">近 4 天</option>
-                <option :value="5">近 5 天</option>
-            </select>
-        </div>
-    </section>
-
-    <section class="desktop-mirror" :class="'mirror-mode-' + activeTab.toLowerCase()" aria-label="资金强弱镜像榜单">
-        <header class="mirror-grid mirror-group-head">
-            <div class="mirror-group-name mirror-attack-group">
-                <span class="mirror-polarity"></span>
-                <h2>{{ activeTab === 'RankChange' ? '排名飙升榜' : '资金进攻榜' }}</h2>
-                <small>TOP 10%</small>
-                <button @click="clearSelection" class="mirror-group-action">清空勾选</button>
-            </div>
-            <div class="mirror-axis-head"><span><i></i>{{ mirrorMetricLabel }}<i></i></span></div>
-            <div class="mirror-group-name right mirror-weak-group">
-                <small>BOTTOM 10%</small>
-                <h2>{{ activeTab === 'RankChange' ? '排名暴跌榜' : '资金撤离榜' }}</h2>
-                <span class="mirror-polarity"></span>
-            </div>
-        </header>
-
-        <div class="mirror-grid mirror-column-head">
-            <div>板块 / 排名</div>
-            <div><button class="mirror-sort-button" @click="handleSort('top', 'pct_change')">涨跌幅 <span v-html="getSortIcon('top', 'pct_change')"></span></button></div>
-            <div v-for="aux in mirrorAuxColumns" :key="'top-head-' + aux.id"><button v-if="aux.key" class="mirror-sort-button" @click="handleSort('top', aux.topKey)">{{ aux.label }} <span v-html="getSortIcon('top', aux.topKey)"></span></button></div>
-            <div><div class="mirror-primary-sort"><button @click="handleSort('top', mirrorPrimarySortKey)">{{ mirrorDirectionLabels[0] }} <span v-html="getSortIcon('top', mirrorPrimarySortKey)"></span></button><button @click="handleSort('bot', mirrorPrimarySortKey)"><span v-html="getSortIcon('bot', mirrorPrimarySortKey)"></span> {{ mirrorDirectionLabels[1] }}</button></div></div>
-            <div v-for="aux in mirrorAuxColumnsReversed" :key="'bot-head-' + aux.id"><button v-if="aux.key" class="mirror-sort-button" @click="handleSort('bot', aux.botKey)"><span v-html="getSortIcon('bot', aux.botKey)"></span> {{ aux.label }}</button></div>
-            <div><button class="mirror-sort-button" @click="handleSort('bot', 'pct_change')"><span v-html="getSortIcon('bot', 'pct_change')"></span> 涨跌幅</button></div>
-            <div>排名 / 板块</div>
-        </div>
-
-        <div v-if="mirrorRows.length === 0" class="mirror-empty">当前条件下没有榜单数据</div>
-        <template v-for="(row, rowIndex) in mirrorRows" :key="'mirror-' + rowIndex + '-' + (row.top ? row.top.index_name : '') + '-' + (row.bot ? row.bot.index_name : '')">
-            <div class="mirror-grid mirror-row">
-                <div class="mirror-cell mirror-board left">
-                    <template v-if="row.top">
-                        <input type="checkbox" v-model="selectedSectors" :value="row.top.index_name" @click.stop aria-label="勾选板块">
-                        <span class="mirror-rank">{{ mirrorRank(row.top) }}</span>
-                        <button class="mirror-name" @click.stop="openModal(row.top, 'top')">{{ cleanName(row.top.index_name) }}</button>
-                    </template>
-                </div>
-                <div class="mirror-cell" :class="row.top ? mirrorValueClass(row.top.pct_change, {kind:'signed'}) : ''">{{ row.top ? formatPctChange(row.top.pct_change) : '' }}</div>
-                <div v-for="aux in mirrorAuxColumns" :key="'top-' + rowIndex + '-' + aux.id" class="mirror-cell">
-                    <button v-if="row.top && aux.kind === 'calendar'" class="mirror-calendar-button" @click.stop="toggleCalendar(row.top.index_name)">{{ mirrorAuxValue(row.top, aux, 'top') }}</button>
-                    <span v-else-if="row.top && aux.key" :class="mirrorValueClass(mirrorAuxRaw(row.top, aux, 'top'), aux)">{{ mirrorAuxValue(row.top, aux, 'top') }}</span>
-                </div>
-                <div class="mirror-cell mirror-flow">
-                    <div class="mirror-half left"><div v-if="row.top" class="mirror-bar" :style="mirrorBarStyle(row.top)">{{ formatMirrorMetric(row.top) }}</div></div>
-                    <div class="mirror-half right"><div v-if="row.bot" class="mirror-bar" :style="mirrorBarStyle(row.bot)">{{ formatMirrorMetric(row.bot) }}</div></div>
-                </div>
-                <div v-for="aux in mirrorAuxColumnsReversed" :key="'bot-' + rowIndex + '-' + aux.id" class="mirror-cell">
-                    <button v-if="row.bot && aux.kind === 'calendar'" class="mirror-calendar-button" @click.stop="toggleCalendar(row.bot.index_name)">{{ mirrorAuxValue(row.bot, aux, 'bot') }}</button>
-                    <span v-else-if="row.bot && aux.key" :class="mirrorValueClass(mirrorAuxRaw(row.bot, aux, 'bot'), aux)">{{ mirrorAuxValue(row.bot, aux, 'bot') }}</span>
-                </div>
-                <div class="mirror-cell" :class="row.bot ? mirrorValueClass(row.bot.pct_change, {kind:'signed'}) : ''">{{ row.bot ? formatPctChange(row.bot.pct_change) : '' }}</div>
-                <div class="mirror-cell mirror-board right">
-                    <template v-if="row.bot">
-                        <button class="mirror-name" @click.stop="openModal(row.bot, 'bottom')">{{ cleanName(row.bot.index_name) }}</button>
-                        <span class="mirror-rank">{{ mirrorRank(row.bot) }}</span>
-                        <input type="checkbox" v-model="selectedSectors" :value="row.bot.index_name" @click.stop aria-label="勾选板块">
-                    </template>
-                </div>
-            </div>
-            <div v-if="(row.top && expandedCal === row.top.index_name) || (row.bot && expandedCal === row.bot.index_name)" class="mirror-calendar">
-                <div v-if="row.top && expandedCal === row.top.index_name" class="mirror-calendar-panel">
-                    <div class="mirror-calendar-head"><span>【{{ cleanName(row.top.index_name) }}】近 30 交易日排名轨迹</span><button @click.stop="expandedCal = null">收起</button></div>
-                    <div class="flex flex-wrap gap-1"><div v-for="dateStr in availableDatesList" :key="dateStr" class="cal-box" :class="getHeatmapClass(getHistoricalRank(row.top.index_name, dateStr), 'top')" @click.stop="jumpToDate(dateStr)"><span class="cal-date">{{ dateStr.substring(5).replace('-', '') }}</span><span class="cal-rank">{{ getHistoricalRank(row.top.index_name, dateStr) || '-' }}</span></div></div>
-                </div>
-                <div v-if="row.bot && expandedCal === row.bot.index_name" class="mirror-calendar-panel right">
-                    <div class="mirror-calendar-head"><span>【{{ cleanName(row.bot.index_name) }}】近 30 交易日排名轨迹</span><button @click.stop="expandedCal = null">收起</button></div>
-                    <div class="flex flex-wrap gap-1"><div v-for="dateStr in availableDatesList" :key="dateStr" class="cal-box" :class="getHeatmapClass(getHistoricalRank(row.bot.index_name, dateStr), 'bot')" @click.stop="jumpToDate(dateStr)"><span class="cal-date">{{ dateStr.substring(5).replace('-', '') }}</span><span class="cal-rank">{{ getHistoricalRank(row.bot.index_name, dateStr) || '-' }}</span></div></div>
-                </div>
-            </div>
-        </template>
-    </section>
-
-    <div class="mobile-radar-only grid grid-cols-1 gap-4 md:gap-6 items-start">
-        
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm relative z-0 overflow-hidden">
-            <div class="p-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <div class="flex items-center">
-                    <span class="text-base md:text-[1.05rem] font-black text-red-600 tracking-tight">
-                        {{ activeTab === 'RankChange' ? '排名飙升榜' : '资金进攻榜' }}
-                    </span>
-                    <span class="ml-2 md:ml-3 text-[9px] md:text-[10px] text-slate-500 font-bold border border-slate-300 px-2 py-0.5 rounded-full bg-white shadow-sm">
-                        TOP 10% <span v-if="activeTab === 'RankChange'">(基准: {{ tabs.find(t=>t.id===rankChangeMetric).name }})</span>
-                    </span>
-                </div>
-                <button @click="clearSelection" class="text-[11px] md:text-xs font-bold text-slate-500 hover:text-blue-600">清空勾选</button>
-            </div>
-            
-            <div class="overflow-x-auto w-full hide-scrollbar">
-                <div class="min-w-[760px] pb-2">
-                    <div class="grid grid-cols-12 table-head items-center py-1.5 px-1">
-                        <div class="col-span-1 text-center flex justify-center items-center custom-tooltip">
-                            <input type="checkbox" v-model="isAllTopSelected" class="cursor-pointer">
-                            <div class="tooltip-text" style="width:100px; left:200%;">全选/取消全选</div>
-                        </div>
-                        <div class="col-span-1 text-center">No.</div>
-                        <div class="col-span-2 text-left pl-2">板块名称</div>
-                        <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'pct_change')">
-                            涨跌幅 <span v-html="getSortIcon('top', 'pct_change')"></span>
-                        </div>
-                        
-                        <template v-if="activeTab === 'RankChange'">
-                            <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Swing_Rank_Chg')">波段率 <span v-html="getSortIcon('top', 'Swing_Rank_Chg')"></span></div>
-                            <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Ratio_Rank_Chg')">单日率 <span v-html="getSortIcon('top', 'Ratio_Rank_Chg')"></span></div>
-                            <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Amount_Rank_Chg')">单日额 <span v-html="getSortIcon('top', 'Amount_Rank_Chg')"></span></div>
-                        </template>
-                        
-                        <template v-else>
-                            <div v-if="activeTab !== 'Amount'" class="col-span-2 text-center sortable-head flex-center-y justify-center custom-tooltip" @click="handleSort('top', activeTab + '_Score')">
-                                加权评分 <span class="tooltip-icon">?</span>
-                                <div class="tooltip-text"><strong class="text-blue-300">说明：</strong> 后端特征算法算出的综合加权值。</div>
-                                <span v-html="getSortIcon('top', activeTab + '_Score')"></span>
-                            </div>
-                            <div v-if="activeTab === 'Amount'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Ratio_Raw_Pct')">
-                                单日流入率 <span v-html="getSortIcon('top', 'Ratio_Raw_Pct')"></span>
-                            </div>
-                            <div v-if="activeTab === 'Swing'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Swing_Ratio_Val')">
-                                波段流入率 <span v-html="getSortIcon('top', 'Swing_Ratio_Val')"></span>
-                            </div>
-                            <div v-if="activeTab === 'Ratio'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Ratio_Raw_Pct')">
-                                单日流入率 <span v-html="getSortIcon('top', 'Ratio_Raw_Pct')"></span>
-                            </div>
-                            <div v-if="activeTab === 'Amount'" class="col-span-3 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', 'Amount_Raw_BN')">
-                                单日净额 <span v-html="getSortIcon('top', 'Amount_Raw_BN')"></span>
-                            </div>
-                            <div v-if="activeTab !== 'Amount'" class="col-span-1 text-center sortable-head flex-center-y justify-center text-[11px]" @click="handleSort('top', 'Amount_Raw_BN')">
-                                净额 <span v-html="getSortIcon('top', 'Amount_Raw_BN')"></span>
-                            </div>
-                            <div class="col-span-1 text-center sortable-head flex-center-y justify-center" @click="handleSort('top', activeTab + '_Top30d')">
-                                在榜 <span v-html="getSortIcon('top', activeTab + '_Top30d')"></span>
-                            </div>
-                        </template>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <div v-if="topList.length === 0" class="mirror-empty">当前条件下没有榜单数据</div>
-                        <template v-for="item in topList" :key="item.index_name">
-                            <label class="grid grid-cols-12 px-1 data-row items-stretch cursor-pointer relative" :class="{'bg-blue-50 border-l-2 border-blue-500': expandedCal === item.index_name}">
-                                <div class="col-span-1 text-center flex-center-y justify-center"><input type="checkbox" v-model="selectedSectors" :value="item.index_name" @click.stop></div>
-                                <div class="col-span-1 text-center flex-center-y justify-center">
-                                    <span class="rank-tag bg-rank-up">{{ item[(activeTab === 'RankChange' ? rankChangeMetric : activeTab) + '_RankPos'] }}</span>
-                                </div>
-                                <div class="col-span-2 text-left pl-2 font-bold text-slate-800 truncate pr-2 flex-center-y hover:text-blue-600 transition" @click.stop="openModal(item, 'top')">{{ cleanName(item.index_name) }}</div>
-                                <div class="col-span-2 text-center text-sm font-semibold flex-center-y justify-center" :class="item.pct_change >= 0 ? 'text-up' : 'text-down'">{{ Number.isFinite(item.pct_change) ? ((item.pct_change > 0 ? '+' : '') + item.pct_change.toFixed(2) + '%') : '-' }}</div>
-                                
-                                <template v-if="activeTab === 'RankChange'">
-                                    <div class="col-span-2 flex-center-y justify-center font-bold text-sm" :class="rankChangeMetric === 'Swing' ? 'highlight-col' : ''">
-                                        <span v-if="item.Swing_Rank_Chg > 0" class="text-up">↑ {{ item.Swing_Rank_Chg }}</span>
-                                        <span v-else-if="item.Swing_Rank_Chg < 0" class="text-down">↓ {{ Math.abs(item.Swing_Rank_Chg) }}</span>
-                                        <span v-else class="text-slate-400">-</span>
-                                    </div>
-                                    <div class="col-span-2 flex-center-y justify-center font-bold text-sm" :class="rankChangeMetric === 'Ratio' ? 'highlight-col' : ''">
-                                        <span v-if="item.Ratio_Rank_Chg > 0" class="text-up">↑ {{ item.Ratio_Rank_Chg }}</span>
-                                        <span v-else-if="item.Ratio_Rank_Chg < 0" class="text-down">↓ {{ Math.abs(item.Ratio_Rank_Chg) }}</span>
-                                        <span v-else class="text-slate-400">-</span>
-                                    </div>
-                                    <div class="col-span-2 flex-center-y justify-center font-bold text-sm" :class="rankChangeMetric === 'Amount' ? 'highlight-col' : ''">
-                                        <span v-if="item.Amount_Rank_Chg > 0" class="text-up">↑ {{ item.Amount_Rank_Chg }}</span>
-                                        <span v-else-if="item.Amount_Rank_Chg < 0" class="text-down">↓ {{ Math.abs(item.Amount_Rank_Chg) }}</span>
-                                        <span v-else class="text-slate-400">-</span>
-                                    </div>
-                                </template>
-                                
-                                <template v-else>
-                                    <div v-if="activeTab !== 'Amount'" class="col-span-2 flex-center-y justify-center highlight-col font-black">
-                                        <span class="text-sm">{{ item[activeTab + '_Score'].toFixed(1) }}</span>
-                                    </div>
-                                    <div v-if="activeTab === 'Amount'" class="col-span-2 flex-center-y justify-center">
-                                        <span class="text-sm font-bold text-slate-700">{{ (item.Ratio_Raw_Pct * 100).toFixed(2) }}%</span>
-                                    </div>
-                                    <div v-if="activeTab === 'Swing'" class="col-span-2 flex-center-y justify-center highlight-col">
-                                        <span class="text-sm">{{ (item.Swing_Ratio_Val * 100).toFixed(2) }}%</span>
-                                    </div>
-                                    <div v-if="activeTab === 'Ratio'" class="col-span-2 flex-center-y justify-center highlight-col">
-                                        <span class="text-sm">{{ (item.Ratio_Raw_Pct * 100).toFixed(2) }}%</span>
-                                    </div>
-                                    <div v-if="activeTab === 'Amount'" class="col-span-3 flex-center-y justify-center highlight-col">
-                                        <span class="text-sm">{{ item.Amount_Raw_BN.toFixed(2) }} 亿</span>
-                                    </div>
-                                    <div v-if="activeTab !== 'Amount'" class="col-span-1 text-center flex-center-y justify-center text-[10px] font-bold text-slate-500">
-                                         {{ item.Amount_Raw_BN.toFixed(1) }} 亿
-                                    </div>
-                                    <div class="col-span-1 text-center flex-center-y justify-center" @click.stop="toggleCalendar(item.index_name)">
-                                        <span class="inline-flex w-6 h-6 items-center justify-center bg-slate-100 hover:bg-blue-200 text-blue-700 font-black rounded transition border border-slate-200">{{ item[activeTab + '_Top30d'] }}</span>
-                                    </div>
-                                </template>
-                            </label>
-                            <div v-if="expandedCal === item.index_name" class="calendar-tray p-3 col-span-12 w-full origin-top animate-fade-in-down">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-[11px] font-bold text-slate-600">【{{ cleanName(item.index_name) }}】近 30 交易日排名轨迹</span>
-                                    <button @click.stop="expandedCal = null" class="text-[10px] bg-white border border-slate-300 px-2 py-0.5 rounded shadow-sm hover:bg-slate-50 text-slate-600 font-bold">收起</button>
-                                </div>
-                                <div class="flex flex-wrap gap-1">
-                                    <div v-for="dateStr in availableDatesList" :key="dateStr" class="cal-box" :class="getHeatmapClass(getHistoricalRank(item.index_name, dateStr), 'top')" @click.stop="jumpToDate(dateStr)">
-                                        <span class="cal-date">{{ dateStr.substring(5).replace('-', '') }}</span>
-                                        <span class="cal-rank">{{ getHistoricalRank(item.index_name, dateStr) || '-' }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm relative z-0 overflow-hidden">
-            <div class="p-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <div class="flex items-center">
-                    <span class="text-base md:text-[1.05rem] font-black text-green-600 tracking-tight">
-                        {{ activeTab === 'RankChange' ? '排名暴跌榜' : '资金撤离榜' }}
-                    </span>
-                    <span class="ml-2 md:ml-3 text-[9px] md:text-[10px] text-slate-500 font-bold border border-slate-300 px-2 py-0.5 rounded-full bg-white shadow-sm">
-                        BOTTOM 10% <span v-if="activeTab === 'RankChange'">(基准: {{ tabs.find(t=>t.id===rankChangeMetric).name }})</span>
-                    </span>
-                </div>
-            </div>
-            
-            <div class="overflow-x-auto w-full hide-scrollbar">
-                <div class="min-w-[760px] pb-2">
-                    <div class="grid grid-cols-12 table-head items-center py-1.5 px-1">
-                        <div class="col-span-1 text-center flex justify-center items-center custom-tooltip">
-                            <input type="checkbox" v-model="isAllBotSelected" class="cursor-pointer">
-                            <div class="tooltip-text" style="width:100px; left:200%;">全选/取消全选</div>
-                        </div>
-                        <div class="col-span-1 text-center">No.</div>
-                        <div class="col-span-2 text-left pl-2">板块名称</div>
-                        <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'pct_change')">
-                            涨跌幅 <span v-html="getSortIcon('bot', 'pct_change')"></span>
-                        </div>
-                        
-                        <template v-if="activeTab === 'RankChange'">
-                            <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Swing_Rank_Chg')">波段率 <span v-html="getSortIcon('bot', 'Swing_Rank_Chg')"></span></div>
-                            <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Ratio_Rank_Chg')">单日率 <span v-html="getSortIcon('bot', 'Ratio_Rank_Chg')"></span></div>
-                            <div class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Amount_Rank_Chg')">单日额 <span v-html="getSortIcon('bot', 'Amount_Rank_Chg')"></span></div>
-                        </template>
-                        
-                        <template v-else>
-                            <div v-if="activeTab !== 'Amount'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', activeTab + '_Score')">
-                                加权评分 <span v-html="getSortIcon('bot', activeTab + '_Score')"></span>
-                            </div>
-                            <div v-if="activeTab === 'Amount'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Ratio_Raw_Pct')">
-                                单日流入率 <span v-html="getSortIcon('bot', 'Ratio_Raw_Pct')"></span>
-                            </div>
-                            <div v-if="activeTab === 'Swing'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Swing_Ratio_Val')">
-                                波段流入率 <span v-html="getSortIcon('bot', 'Swing_Ratio_Val')"></span>
-                            </div>
-                            <div v-if="activeTab === 'Ratio'" class="col-span-2 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Ratio_Raw_Pct')">
-                                单日流入率 <span v-html="getSortIcon('bot', 'Ratio_Raw_Pct')"></span>
-                            </div>
-                            <div v-if="activeTab === 'Amount'" class="col-span-3 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', 'Amount_Raw_BN')">
-                                单日净额 <span v-html="getSortIcon('bot', 'Amount_Raw_BN')"></span>
-                            </div>
-                            <div v-if="activeTab !== 'Amount'" class="col-span-1 text-center sortable-head flex-center-y justify-center text-[11px]" @click="handleSort('bot', 'Amount_Raw_BN')">
-                                净额 <span v-html="getSortIcon('bot', 'Amount_Raw_BN')"></span>
-                            </div>
-                            <div class="col-span-1 text-center sortable-head flex-center-y justify-center" @click="handleSort('bot', activeTab + '_Bot30d')">
-                                在榜 <span v-html="getSortIcon('bot', activeTab + '_Bot30d')"></span>
-                            </div>
-                        </template>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <div v-if="botList.length === 0" class="mirror-empty">当前条件下没有榜单数据</div>
-                        <template v-for="item in botList" :key="item.index_name">
-                            <label class="grid grid-cols-12 px-1 data-row items-stretch cursor-pointer relative" :class="{'bg-green-50 border-l-2 border-green-500': expandedCal === item.index_name}">
-                                <div class="col-span-1 text-center flex-center-y justify-center"><input type="checkbox" v-model="selectedSectors" :value="item.index_name" @click.stop></div>
-                                <div class="col-span-1 text-center flex-center-y justify-center">
-                                    <span class="rank-tag bg-rank-down">{{ item[(activeTab === 'RankChange' ? rankChangeMetric : activeTab) + '_RankPos'] }}</span>
-                                </div>
-                                <div class="col-span-2 text-left pl-2 font-bold text-slate-800 truncate pr-2 flex-center-y hover:text-green-600 transition" @click.stop="openModal(item, 'bottom')">{{ cleanName(item.index_name) }}</div>
-                                <div class="col-span-2 text-center text-sm font-semibold flex-center-y justify-center" :class="item.pct_change >= 0 ? 'text-up' : 'text-down'">{{ Number.isFinite(item.pct_change) ? ((item.pct_change > 0 ? '+' : '') + item.pct_change.toFixed(2) + '%') : '-' }}</div>
-                                
-                                <template v-if="activeTab === 'RankChange'">
-                                    <div class="col-span-2 flex-center-y justify-center font-bold text-sm" :class="rankChangeMetric === 'Swing' ? 'highlight-col' : ''">
-                                        <span v-if="item.Swing_Rank_Chg > 0" class="text-up">↑ {{ item.Swing_Rank_Chg }}</span>
-                                        <span v-else-if="item.Swing_Rank_Chg < 0" class="text-down">↓ {{ Math.abs(item.Swing_Rank_Chg) }}</span>
-                                        <span v-else class="text-slate-400">-</span>
-                                    </div>
-                                    <div class="col-span-2 flex-center-y justify-center font-bold text-sm" :class="rankChangeMetric === 'Ratio' ? 'highlight-col' : ''">
-                                        <span v-if="item.Ratio_Rank_Chg > 0" class="text-up">↑ {{ item.Ratio_Rank_Chg }}</span>
-                                        <span v-else-if="item.Ratio_Rank_Chg < 0" class="text-down">↓ {{ Math.abs(item.Ratio_Rank_Chg) }}</span>
-                                        <span v-else class="text-slate-400">-</span>
-                                    </div>
-                                    <div class="col-span-2 flex-center-y justify-center font-bold text-sm" :class="rankChangeMetric === 'Amount' ? 'highlight-col' : ''">
-                                        <span v-if="item.Amount_Rank_Chg > 0" class="text-up">↑ {{ item.Amount_Rank_Chg }}</span>
-                                        <span v-else-if="item.Amount_Rank_Chg < 0" class="text-down">↓ {{ Math.abs(item.Amount_Rank_Chg) }}</span>
-                                        <span v-else class="text-slate-400">-</span>
-                                    </div>
-                                </template>
-                                
-                                <template v-else>
-                                    <div v-if="activeTab !== 'Amount'" class="col-span-2 flex-center-y justify-center highlight-col font-black">
-                                         <span class="text-sm">{{ item[activeTab + '_Score'].toFixed(1) }}</span>
-                                    </div>
-                                    <div v-if="activeTab === 'Amount'" class="col-span-2 flex-center-y justify-center">
-                                        <span class="text-sm font-bold text-slate-700">{{ (item.Ratio_Raw_Pct * 100).toFixed(2) }}%</span>
-                                    </div>
-                                    <div v-if="activeTab === 'Swing'" class="col-span-2 flex-center-y justify-center highlight-col">
-                                        <span class="text-sm">{{ (item.Swing_Ratio_Val * 100).toFixed(2) }}%</span>
-                                    </div>
-                                    <div v-if="activeTab === 'Ratio'" class="col-span-2 flex-center-y justify-center highlight-col">
-                                        <span class="text-sm">{{ (item.Ratio_Raw_Pct * 100).toFixed(2) }}%</span>
-                                    </div>
-                                    <div v-if="activeTab === 'Amount'" class="col-span-3 flex-center-y justify-center highlight-col">
-                                        <span class="text-sm">{{ item.Amount_Raw_BN.toFixed(2) }} 亿</span>
-                                    </div>
-                                    <div v-if="activeTab !== 'Amount'" class="col-span-1 text-center flex-center-y justify-center text-[10px] font-bold text-slate-500">
-                                         {{ item.Amount_Raw_BN.toFixed(1) }} 亿
-                                    </div>
-                                    <div class="col-span-1 text-center flex-center-y justify-center" @click.stop="toggleCalendar(item.index_name)">
-                                        <span class="inline-flex w-6 h-6 items-center justify-center bg-slate-100 hover:bg-green-200 text-green-700 font-black rounded transition border border-slate-200">{{ item[activeTab + '_Bot30d'] }}</span>
-                                    </div>
-                                </template>
-                            </label>
-                            <div v-if="expandedCal === item.index_name" class="calendar-tray p-3 col-span-12 w-full origin-top animate-fade-in-down">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-[11px] font-bold text-slate-600">【{{ cleanName(item.index_name) }}】近 30 交易日排名轨迹</span>
-                                    <button @click.stop="expandedCal = null" class="text-[10px] bg-white border border-slate-300 px-2 py-0.5 rounded shadow-sm hover:bg-slate-50 text-slate-600 font-bold">收起</button>
-                                </div>
-                                <div class="flex flex-wrap gap-1">
-                                    <div v-for="dateStr in availableDatesList" :key="dateStr" class="cal-box" :class="getHeatmapClass(getHistoricalRank(item.index_name, dateStr), 'bot')" @click.stop="jumpToDate(dateStr)">
-                                        <span class="cal-date">{{ dateStr.substring(5).replace('-', '') }}</span>
-                                        <span class="cal-rank">{{ getHistoricalRank(item.index_name, dateStr) || '-' }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="oc-footer text-center flex flex-col items-center justify-center gap-2 pb-4">
-        <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-[10px] md:text-xs font-medium text-slate-500">
-            <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg> 数据源: Tushare + 东财板块日线资金流数据</span>
-            <span class="hidden md:inline text-slate-300">|</span>
-            <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 更新频率: 交易日 17:00 ~ 17:30 自动同步</span>
-            <span class="hidden md:inline text-slate-300">|</span>
-            <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg> 参数说明: 波段周期取 3-10 个交易日多周期协同加权</span>
-        </div>
-        <div class="text-[9px] md:text-[10px] text-slate-400 mt-1 max-w-3xl leading-relaxed px-4">
-            <span class="font-bold text-slate-500">免责声明：</span>本页面工具及特征可视化数据仅供量化投研学习与逻辑复盘参考，不构成任何投资建议。股市有风险，入市须谨慎。
-        </div>
-    </div>
-
-    </div>
-
-    <div v-if="modalData" class="modal-overlay" @click.self="closeModal">
-        <div class="modal-content flex flex-col max-h-[85vh] md:max-h-[90vh]">
-            <div class="modal-head">
-                <div class="w-full">
-                    <div class="modal-title-row">
-                        <h2 class="modal-title">{{ cleanName(currentModalData.index_name) }}</h2>
-                        <span class="modal-type">{{ currentModalData.type.replace('板块', '') }}</span>
-                        <span class="modal-code">{{ currentModalData.ts_code }}</span>
-                        <div class="modal-actions">
-                            <button @click="copySingleSector(currentModalData)" class="modal-action">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                                <span>复制成分股</span>
-                            </button>
-                            <button @click="exportSingleSector(currentModalData)" class="modal-action">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                <span>导出成分股</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="modal-meta">
-                        <span class="modal-date">{{ currentModalData.trade_date }}</span>
-                        <span v-if="chartSelectedDate" class="modal-history">历史回溯</span>
-                        <span class="modal-leader-label">当日领涨</span>
-                        <span class="modal-leader">{{ currentModalData.lead_stock || '--' }}</span>
-                        <span :class="(currentModalData.pct_change_stock || 0) >= 0 ? 'text-up' : 'text-down'" class="modal-leader-change">{{ (currentModalData.pct_change_stock || 0) > 0 ? '+' : '' }}{{ (currentModalData.pct_change_stock || 0).toFixed(2) }}%</span>
-                    </div>
-                </div>
-                <button @click="closeModal" class="modal-close" aria-label="关闭详情"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
-
-            <div class="modal-body">
-                <h3 class="detail-section-title">当日数据切片 · 排名</h3>
-                <div class="detail-metrics">
-                    <div class="detail-metric">
-                        <div class="detail-metric-label">当日涨跌幅</div>
-                        <div class="detail-metric-value" :class="(currentModalData.pct_change || 0) >= 0 ? 'text-up' : 'text-down'">{{ Number.isFinite(currentModalData.pct_change) ? ((currentModalData.pct_change > 0 ? '+' : '') + currentModalData.pct_change.toFixed(2) + '%') : '-' }}</div>
-                    </div>
-                    <div class="detail-metric" :class="{'is-active': modalActiveTab === 'Swing'}">
-                        <div class="detail-metric-label">波段流入排名</div>
-                        <div class="detail-metric-value"><span class="detail-metric-unit">NO.</span>{{ currentModalData.Swing_RankPos || '-' }}</div>
-                        <div class="detail-metric-sub">波段均值 <strong>{{ ((currentModalData.Swing_Ratio_Val || 0) * 100).toFixed(2) }}%</strong></div>
-                    </div>
-                    <div class="detail-metric" :class="{'is-active': modalActiveTab === 'Ratio'}">
-                        <div class="detail-metric-label">单日流入排名</div>
-                        <div class="detail-metric-value"><span class="detail-metric-unit">NO.</span>{{ currentModalData.Ratio_RankPos || '-' }}</div>
-                        <div class="detail-metric-sub">占比 <strong>{{ ((currentModalData.Ratio_Raw_Pct || 0) * 100).toFixed(2) }}%</strong></div>
-                    </div>
-                    <div class="detail-metric" :class="{'is-active': modalActiveTab === 'Amount'}">
-                        <div class="detail-metric-label">单日净额排名</div>
-                        <div class="detail-metric-value"><span class="detail-metric-unit">NO.</span>{{ currentModalData.Amount_RankPos || '-' }}</div>
-                        <div class="detail-metric-sub">主力净流入 <strong>{{ (currentModalData.Amount_Raw_BN || 0).toFixed(2) }} 亿</strong></div>
-                    </div>
-                </div>
-
-                <div class="detail-trend-head">
-                    <h3 class="detail-section-title">近 30 日 · {{ modalActiveTab === 'Swing' ? '波段流入' : (modalActiveTab === 'Ratio' ? '单日流入' : '单日净额') }}排名轨迹</h3>
-                    <div class="detail-tabs" role="tablist" aria-label="详情排名指标">
-                        <button v-for="tab in tabs.filter(t=>t.id!=='RankChange')" @click="modalActiveTab = tab.id"
-                                :class="{'is-active': modalActiveTab === tab.id}"
-                                class="detail-tab" role="tab" :aria-selected="modalActiveTab === tab.id">
-                            {{ tab.name }}
-                        </button>
-                    </div>
-                </div>
-                <div class="detail-chart">
-                    <svg viewBox="0 0 400 160" preserveAspectRatio="none" aria-hidden="true">
-                        <line v-for="y in [32,64,96,128]" :key="y" x1="0" :y1="y" x2="400" :y2="y" class="detail-chart-grid"></line>
-                        <path :d="getChartData(modalData.index_name, modalActiveTab).linePath" class="detail-chart-line"></path>
-                    </svg>
-                    <div v-for="pt in getChartData(modalData.index_name, modalActiveTab).points" :key="pt.date"
-                         class="detail-chart-hit" :class="{'is-selected': chartSelectedDate === pt.date}"
-                         :style="{ left: pt.xPct }" @click.stop="toggleChartDate(pt.date)">
-                        <div class="detail-chart-cursor"></div>
-                        <div class="detail-chart-point" :style="{ top: pt.yPct }"></div>
-                        <div class="detail-chart-date">{{ pt.date.substring(5) }}</div>
-                        <div class="detail-chart-rank" :style="{ top: pt.yPct }">NO.{{ pt.rank }}</div>
-                    </div>
-                </div>
-
-                <section class="constituent-strength" aria-label="成分强弱">
-                    <div class="detail-trend-head">
-                        <h3 class="detail-section-title">成分强弱 · 个股</h3>
-                        <div class="detail-tabs" role="tablist" aria-label="个股排行指标">
-                            <button v-for="metric in constituentMetrics" :key="metric.id" @click="constituentMetric=metric.id" :class="{'is-active': constituentMetric===metric.id}" class="detail-tab" role="tab" :aria-selected="constituentMetric===metric.id">{{ metric.name }}</button>
-                        </div>
-                    </div>
-                    <p class="detail-metric-sub">主买净额为个股 L2 主动买卖净额（moneyflow.net_mf_amount），不等同主力净额。</p>
-                    <div class="constituent-toolbar">
-                        <span class="constituent-date">{{ constituentDateLabel }} · {{ constituentMetricUnit }}</span>
-                        <div class="constituent-direction" role="tablist" aria-label="个股排行方向">
-                            <button @click="constituentDirection='top'" :class="{'is-active':constituentDirection==='top'}" role="tab" :aria-selected="constituentDirection==='top'">{{ constituentLimited ? '从高到低' : '前 5' }}</button>
-                            <button @click="constituentDirection='bottom'" :class="{'is-active':constituentDirection==='bottom'}" role="tab" :aria-selected="constituentDirection==='bottom'">{{ constituentLimited ? '从低到高' : '后 5' }}</button>
-                        </div>
-                    </div>
-                    <p v-if="constituentNotice" class="detail-metric-sub">{{ constituentNotice }}</p>
-                    <div v-if="constituentStatus" class="similar-empty">{{ constituentStatus }}</div>
-                    <ol v-else class="constituent-list">
-                        <li v-for="(row,index) in constituentRows" :key="row.stock_code">
-                            <span class="constituent-rank">{{ index + 1 }}</span>
-                            <span class="constituent-stock"><strong>{{ row.stock_name || '—' }}</strong>{{ row.stock_code }}</span>
-                            <b class="constituent-value">{{ formatConstituentValue(row.value) }}</b>
-                        </li>
-                    </ol>
-                </section>
-
-                <h3 class="detail-section-title">成分近似板块 · 重合度</h3>
-                <div v-if="similarSectors.length" class="similar-list">
-                    <button v-for="sim in similarSectors" :key="sim.name" @click="openModalByName(sim.name)" class="similar-item">
-                        <span class="similar-name">{{ sim.name }}</span>
-                        <span class="similar-score">{{(sim.score * 100).toFixed(1)}}% 重合</span>
-                    </button>
-                </div>
-                <div v-else class="similar-empty">暂无高重合度板块信息</div>
-            </div>
-        </div>
-    </div>
-</div>
+<div id="app" v-cloak class="oc-app relative"></div>
 
 
+<script src="assets/cashflow/ec49a28fd3b6/render.js"></script>
 <script>
     // 异步加载数据，不阻塞页面渲染
     const { createApp } = Vue;
     
     function initApp() {
-        createApp({
+        window.CashflowApp = createApp({
+        render: window.CashflowRender,
         data() {
             const data = typeof RADAR_DATA !== 'undefined' ? RADAR_DATA : [];
             let dates = typeof AVAILABLE_DATES !== 'undefined' ? AVAILABLE_DATES : [...new Set(data.map(d => d.trade_date))];
@@ -1175,13 +638,19 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 constituentMap: (window.CONSTITUENT_MAP || null),
                 rankHistoryPromise: null,
                 constituentPromise: null,
+                memberDocuments: {}, memberPromises: {}, memberViewToken: 0,
+                similarNotice: '', updateRevision: 0, updateClock: Date.now(), updateCheckFailed: false, updatePolling: false,
+                memberDocumentRefs: {}, memberPromiseRefs: {},
+
                 dateRequestToken: 0,
                 availableDates: dates, 
                 availableDatesList: dates, 
                 selectedDate: dates[0] || '',
                 activeTab: 'Swing',
-                activeType: '概念板块',
-                selectedSectors: [], 
+                activeType: '二级行业',
+                selectedSectors: [],
+                exportMode: false,
+                exportBusy: false, 
                 expandedCal: null, 
                 searchQuery: '',
                 isLocalData: (typeof DATA_SOURCE !== 'undefined' && DATA_SOURCE === 'local'),
@@ -1213,7 +682,20 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 ]
             }
         },
+        mounted() {
+            this.updateTick=()=>{this.updateClock=Date.now();if(!document.hidden)this.pollUpdates();};
+            this.updateTimer=setInterval(this.updateTick,60000);
+            this.updateVisible=()=>{if(!document.hidden)this.updateTick();};
+            document.addEventListener('visibilitychange',this.updateVisible);
+            window.addEventListener('focus',this.updateVisible);
+        },
+        beforeUnmount() {
+            clearInterval(this.updateTimer);document.removeEventListener('visibilitychange',this.updateVisible);
+            window.removeEventListener('focus',this.updateVisible);
+        },
         watch: {
+            chartSelectedDate() { if(this.modalData) this.refreshSimilarContext(); },
+
             activeTab() {
                 this.resetSortState();
             },
@@ -1225,6 +707,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 var token = ++this.dateRequestToken;
                 this.loadDateRecords(newDate).then(function() {
                     if (token !== this.dateRequestToken) return;
+                    if(this.modalData) { this.refreshSimilarContext(); this.loadConstituentRanking(this.modalData); }
                     this.appNotice = '';
                 }.bind(this)).catch(function() {
                     return this.useLegacyFallback().then(function() {
@@ -1245,6 +728,17 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             }
         },
         computed: {
+            updateStatusText() {
+                this.updateRevision;this.updateClock;
+                const date=this.selectedDate, status=this.detailStatusFor(date);
+                let text=status==='legacy'?'数据截至 '+date:
+                    status==='complete'?'板块及个股数据已更新至 '+date:
+                    status==='delayed'?'板块已更新至 '+date+'；个股数据更新延迟，系统仍在补充，齐全后会自动更新。':
+                    '板块已更新至 '+date+'；个股数据补充中，齐全后会自动更新。';
+                if(this.updateCheckFailed)text+=' 暂未取得最新更新状态，稍后自动重试。';
+                return text;
+            },
+
             rawData() {
                 return Object.keys(this.recordsByDate).reduce(function(all, date) {
                     return all.concat(this.recordsByDate[date] || []);
@@ -1319,11 +813,15 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             constituentRows() { var metric=this.constituentMetricEntry; return metric && (metric.status==='available' || metric.status==='available_limited_sample') ? (metric[this.constituentDirection] || []) : []; },
             constituentMetricUnit() { var metric=this.constituentMetrics.find(function(item){ return item.id===this.constituentMetric; }.bind(this)); return metric ? metric.unit : ''; },
             constituentDateLabel() { return (this.chartSelectedDate || this.selectedDate || '').replaceAll('-', '.'); },
-            constituentNotice() { var metric=this.constituentMetricEntry; return metric && metric.status==='available_limited_sample' ? '有效样本 '+metric.sample_size+' 个，以下展示全部标的，不形成前 5 / 后 5 排名。' : ''; },
+            constituentNotice() { return ''; },
             constituentStatus() {
+                if(this.constituentLoadState==='pending')return this.detailPendingText(this.memberDate());
                 if (this.constituentLoadState==='loading') return '正在读取该板块的个股排行…';
                 if (this.constituentLoadState==='error') return '个股排行加载失败，板块主数据不受影响。';
                 if (this.constituentLoadState==='unavailable' || !this.constituentDetail) return '该日期的个股排行暂不可用。';
+                if(this.constituentDetail.membership_status==='unavailable') return '该日期缺少可信成员快照，个股排行暂不可用。';
+                if(this.constituentMetricEntry?.unavailable_reason==='missing_field') return '该日部分成员缺少该指标字段，暂不排名。';
+                if(this.constituentMetricEntry?.unavailable_reason==='missing_stock_rows') return '该日部分成员缺少个股记录，暂不排名。';
                 return this.constituentMetricEntry && (this.constituentMetricEntry.status==='available' || this.constituentMetricEntry.status==='available_limited_sample') ? '' : '当前指标没有有效样本。';
             },
             currentModalData() {
@@ -1366,12 +864,9 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             },
             searchResults() {
                 if (!this.searchQuery.trim()) return [];
-                const q = this.searchQuery.toLowerCase();
                 const pool = this.rawData.filter(d => d.trade_date === this.selectedDate);
-                return pool.filter(d => 
-                    d.index_name.toLowerCase().includes(q) || 
-                    d.ts_code.toLowerCase().includes(q)
-                ).slice(0, 10);
+                return pool.map((row,index)=>({row,index,score:searchEntityScore({name:row.index_name,code:row.ts_code},this.searchQuery)}))
+                    .filter(item=>item.score>=0).sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,60).map(item=>item.row);
             },
             mirrorRows() {
                 const count = Math.max(this.topList.length, this.botList.length);
@@ -1437,6 +932,76 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             }
         },
         methods: {
+            detailStatusFor(date) {
+                this.updateRevision;this.updateClock;
+                const status=window._manifest?.detail_status?.dates?.[date]?.state;
+                if(!status)return 'legacy';
+                return status==='pending' && this.updateClock>=Date.parse(date+'T21:00:00+08:00')?'delayed':status;
+            },
+            detailPendingText(date) {
+                return this.detailStatusFor(date)==='delayed'?'该日个股数据更新延迟，系统仍在补充，齐全后会自动更新。':'该日成员与个股数据补充中，齐全后会自动更新。';
+            },
+            async pollUpdates() {
+                if(this.updatePolling)return;
+                this.updatePolling=true;
+                const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),10000);
+                try {
+                    const fresh=await fetchJson('radar_manifest.json',m=>m && m.schema_version===1 && m.files?.dates && Array.isArray(m.AVAILABLE_DATES),{cache:'no-store',signal:controller.signal});
+                    const previous=window._manifest;
+                    const observed=this.memberDate(), oldRef=previous?.files?.constituents_by_date?.[observed];
+                    const oldStatus=previous?.detail_status?.dates?.[observed];
+                    if(fresh.version!==previous.version) {
+                        const refs={...previous.files.constituents_by_date,...fresh.files.constituents_by_date};
+                        for(const date of fresh.AVAILABLE_DATES)if(!fresh.files.constituents_by_date?.[date])delete refs[date];
+                        window._manifest={...fresh,files:{...fresh.files,dates:{...previous.files.dates,...fresh.files.dates},constituents_by_date:refs},
+                            detail_status:fresh.detail_status?{...fresh.detail_status,dates:{...previous.detail_status?.dates,...fresh.detail_status.dates}}:undefined};
+                        this.availableDates=[...new Set([...fresh.AVAILABLE_DATES,this.selectedDate])].sort((a,b)=>b.localeCompare(a));
+                        this.availableDatesList=this.availableDates;
+                        this.updateRevision++;
+                    }
+                    this.updateCheckFailed=false;this.updateClock=Date.now();
+                    const newRef=window._manifest.files.constituents_by_date?.[observed];
+                    const changed=newRef!==oldRef || JSON.stringify(oldStatus)!==JSON.stringify(window._manifest.detail_status?.dates?.[observed]);
+                    if(changed){delete this.memberDocuments[observed];delete this.memberDocumentRefs[observed];this.constituentManifest=null;}
+                    if(this.modalData && (changed || this.constituentLoadState==='error' || this.constituentLoadState==='unavailable')) {
+                        this.constituentManifest=null;this.refreshSimilarContext();this.loadConstituentRanking(this.modalData);
+                    }
+                } catch (_) {this.updateCheckFailed=true;}
+                finally {clearTimeout(timeout);this.updatePolling=false;}
+            },
+
+            enterExportSelection() {
+                this.clearSelection(); this.exportMode = true; this.showDropdown = false;
+                this.$nextTick(() => { if(this.exportMode) document.getElementById('cashflow-export-cancel')?.focus({preventScroll:true}); });
+            },
+            exitExportSelection() {
+                if(this.exportBusy) return;
+                this.clearSelection(); this.exportMode = false;
+                this.$nextTick(() => { if(!this.exportMode) document.getElementById('cashflow-export-enter')?.focus({preventScroll:true}); });
+            },
+            async confirmExportSelection() {
+                if(this.exportBusy || !this.selectedSectors.length) return;
+                this.exportBusy = true;
+                try { await this.exportToTDX(); } finally { this.exportBusy = false; }
+            },
+            detailBeforeEnter(el) { el.inert = false; },
+            detailBeforeLeave(el) { el.inert = true; },
+            detailAfterLeave() { dispatchEvent(new Event('cashflow-detail-closed')); },
+            memberDate() { return this.chartSelectedDate || this.selectedDate; },
+            sectorCodes(row, date) {
+                const doc = this.memberDocuments[date || this.memberDate()];
+                return row && doc && doc.members[row.ts_code] || [];
+            },
+            async exportMembers(rows, date) {
+                let doc;
+                if(['pending','delayed'].includes(this.detailStatusFor(date))) { alert(this.detailPendingText(date)); return null; }
+                try { doc=await this.ensureConstituents(date); }
+                catch (_) { alert('该日期成员加载失败，未复制或导出；不会使用其他日期回填。'); return null; }
+                if(rows.some(row => !row || !Object.prototype.hasOwnProperty.call(doc.members,row.ts_code))) {
+                    alert('所选板块中存在该日缺少可信成员快照的项目，已停止，未部分导出。'); return null;
+                }
+                return Array.from(new Set(rows.flatMap(row => doc.members[row.ts_code])));
+            },
             applyTheme(theme) {
                 this.theme = theme === 'dark' ? 'dark' : 'light';
                 document.documentElement.dataset.theme = this.theme;
@@ -1448,7 +1013,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             },
             cleanName(nameWithSuffix) {
                 if (!nameWithSuffix) return '';
-                return nameWithSuffix.replace(/\s*\(.*?\)$/, '').trim();
+                return nameWithSuffix.replace(/\s+\((?:行业|二级行业|三级行业|概念|风格|地域)\)$/, '').trim();
             },
             getMirrorMetric(item) {
                 if (!item) return 0;
@@ -1516,7 +1081,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 this.sortState.bot.key = null;
                 this.sortState.bot.order = null;
             },
-            hideDropdownDelay() { setTimeout(() => { this.showDropdown = false; }, 200); },
+            hideDropdownDelay() { setTimeout(() => { if(document.activeElement!==document.querySelector('.oc-search')) this.showDropdown = false; }, 150); },
             clearSelection() { this.selectedSectors = []; },
             closeAllCalendars() { this.expandedCal = null; },
             async toggleCalendar(sectorName) {
@@ -1629,34 +1194,22 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     return state.order === 'desc' ? valB - valA : valA - valB;
                 });
             },
-            async openModal(sectorObj, direction) {
-                this.modalData = sectorObj;
-                this.constituentDirection = direction === 'bottom' ? 'bottom' : 'top';
-                this.constituentDetail = null;
-                this.constituentLoadState = 'loading';
-                this.modalActiveTab = this.activeTab === 'RankChange' ? this.rankChangeMetric : this.activeTab;
-                this.chartSelectedDate = null;
-                this.showDropdown = false;
-                this.searchQuery = '';
-                if (this.activeType !== sectorObj.type) this.activeType = sectorObj.type;
-                try {
-                    await Promise.all([this.ensureRankHistory(), this.ensureConstituents()]);
-                    this.appNotice = '';
-                } catch (err) {
-                    try {
-                        await this.useLegacyFallback();
-                        this.appNotice = '';
-                    } catch (fallbackError) {
-                        this.reportAppError('板块详情加载失败，请稍后重试。', fallbackError);
-                    }
-                }
-                this.calculateSimilarSectors(sectorObj.index_name);
+            async openModal(sectorObj, direction, observationDate) {
+                this.modalData=sectorObj;
+                this.constituentDirection=direction==='bottom'?'bottom':'top';
+                this.constituentDetail=null; this.constituentLoadState='loading';
+                this.modalActiveTab=this.activeTab==='RankChange'?this.rankChangeMetric:this.activeTab;
+                this.chartSelectedDate=observationDate && observationDate!==this.selectedDate?observationDate:null;
+                this.showDropdown=false; this.searchQuery='';
+                if(this.activeType!==sectorObj.type) this.activeType=sectorObj.type;
+                this.ensureRankHistory().catch(err => this.reportAppError('排名历史加载失败，成员与个股排行独立加载。',err));
+                this.refreshSimilarContext();
                 this.loadConstituentRanking(sectorObj);
             },
-            openModalByName(sectorNameWithSuffix) {
-                const target = this.rawData.find(d => d.trade_date === this.selectedDate && 
-                    (d.index_name === sectorNameWithSuffix || d.index_name.startsWith(sectorNameWithSuffix + ' ')));
-                if (target) this.openModal(target);
+            openModalByName(name) {
+                const date=this.memberDate();
+                const target=(this.recordsByDate[date] || []).find(row => row.index_name===name);
+                if(target) this.openModal(target,undefined,date);
             },
             closeModal() { this.modalData = null; this.constituentDetail = null; this.constituentLoadState = 'idle'; this.constituentRequestToken += 1; },
             formatConstituentValue(value) {
@@ -1666,6 +1219,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             },
             async loadConstituentRanking(sectorObj) {
                 var token = ++this.constituentRequestToken;
+                if(['pending','delayed'].includes(this.detailStatusFor(this.memberDate()))){this.constituentDetail=null;this.constituentLoadState='pending';return;}
                 this.constituentDetail = null;
                 this.constituentLoadState = 'loading';
                 try {
@@ -1739,21 +1293,21 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 }).finally(function() { self.rankHistoryPromise = null; });
                 return this.rankHistoryPromise;
             },
-            ensureConstituents() {
-                if (this.constituentMap) return Promise.resolve(this.constituentMap);
-                if (this.constituentPromise) return this.constituentPromise;
-                var manifest = window._manifest;
-                var path = manifest && manifest.files && manifest.files.constituents;
-                if (!path) return Promise.reject(new Error('Missing constituents shard'));
-                var self = this;
-                this.constituentPromise = fetchJson(path, function(data) {
-                    return data && typeof data === 'object' && !Array.isArray(data);
-                }).then(function(data) {
-                    self.constituentMap = data;
-                    window.CONSTITUENT_MAP = data;
-                    return data;
-                }).finally(function() { self.constituentPromise = null; });
-                return this.constituentPromise;
+            ensureConstituents(date) {
+                date = date || this.memberDate();
+                if(['pending','delayed'].includes(this.detailStatusFor(date)))return Promise.reject(new Error('Details pending'));
+                const manifest = window._manifest;
+                const path = manifest && manifest.files && manifest.files.constituents_by_date && manifest.files.constituents_by_date[date];
+                if(!path) return Promise.reject(new Error('Missing dated membership'));
+                if(this.memberDocuments[date] && this.memberDocumentRefs[date]===path)return Promise.resolve(this.memberDocuments[date]);
+                if(this.memberPromises[date] && this.memberPromiseRefs[date]===path)return this.memberPromises[date];
+                const request = fetchJson(path, doc => doc && doc.trade_date===date && doc.members && !Array.isArray(doc.members) &&
+                    Array.isArray(doc.unavailable_codes) && doc.unavailable_codes.every(code => !Object.prototype.hasOwnProperty.call(doc.members,code)) &&
+                    Object.values(doc.members).every(codes => Array.isArray(codes) && codes.every(code => typeof code==='string' && /^\d{6}$/.test(code))))
+                    .then(doc => { if(window._manifest.files.constituents_by_date?.[date]===path){this.memberDocuments[date]=doc;this.memberDocumentRefs[date]=path;} return doc; })
+                    .finally(() => { if(this.memberPromiseRefs[date]===path){delete this.memberPromises[date];delete this.memberPromiseRefs[date];} });
+                this.memberPromises[date]=request;this.memberPromiseRefs[date]=path;
+                return request;
             },
             async useLegacyFallback() {
                 var data = await requestLegacyFallback();
@@ -1768,29 +1322,29 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 }
                 return data;
             },
-            calculateSimilarSectors(sectorNameWithSuffix) {
-                if (!this.constituentMap) {
-                    this.similarSectors = [];
-                    return;
+            async refreshSimilarContext() {
+                const token=++this.memberViewToken, date=this.memberDate(), code=this.modalData?.ts_code;
+                this.similarSectors=[]; this.similarNotice='正在读取该日期成员…';
+                if(['pending','delayed'].includes(this.detailStatusFor(date))){this.similarNotice=this.detailPendingText(date);return;}
+                try {
+                    await Promise.all([this.loadDateRecords(date),this.ensureConstituents(date)]);
+                    if(token!==this.memberViewToken || !this.modalData || this.modalData.ts_code!==code || this.memberDate()!==date) return;
+                    const pool=this.recordsByDate[date], target=pool.find(row=>row.ts_code===code);
+                    const doc=this.memberDocuments[date];
+                    if(!target || !Object.prototype.hasOwnProperty.call(doc.members,code)) { this.similarNotice='该日期缺少可信成员快照。'; return; }
+                    const a=new Set(this.sectorCodes(target,date)), results=[];
+                    for(const row of pool) {
+                        if(row.ts_code===code || !Object.prototype.hasOwnProperty.call(doc.members,row.ts_code)) continue;
+                        const b=this.sectorCodes(row,date), overlap=b.filter(code=>a.has(code)).length;
+                        if(overlap) results.push({name:row.index_name,score:overlap/(a.size+b.length-overlap)});
+                    }
+                    this.similarSectors=results.sort((a,b)=>b.score-a.score).slice(0,4);
+                    this.similarNotice=doc.unavailable_codes.length?'部分板块该日成员缺失，仅比较已知成员。':'';
+                } catch (_) {
+                    if(token===this.memberViewToken && this.modalData?.ts_code===code && this.memberDate()===date)
+                        this.similarNotice='该日期成员加载失败，不使用其他日期回填。';
                 }
-                const rawName = this.cleanName(sectorNameWithSuffix);
-                const targetCodes = this.constituentMap[rawName] || this.constituentMap[sectorNameWithSuffix];
-                if (!targetCodes || targetCodes.length === 0) {
-                    this.similarSectors = []; return;
-                }
-                const setA = new Set(targetCodes);
-                let results = [];
-                for (const [name, codes] of Object.entries(this.constituentMap)) {
-                    if (name === rawName || name === sectorNameWithSuffix) continue;
-                    let intersection = 0;
-                    codes.forEach(c => { if (setA.has(c)) intersection++; });
-                    if (intersection === 0) continue;
-                    let union = setA.size + codes.length - intersection;
-                    results.push({ name, score: intersection / union });
-                }
-                this.similarSectors = results.sort((a, b) => b.score - a.score).slice(0, 4);
             },
-            
             getChartData(sectorName, tabId) {
                 const emptyResult = { path: '', areaPath: '', linePath: '', points: [], top10Y: 16, bot10Y: 144 };
                 if (!this.rankHistoryMap) return emptyResult;
@@ -1798,42 +1352,35 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 if (!history) return emptyResult;
                 const datesAsc = [...this.availableDatesList].reverse();
                 const maxRank = this.totalPoolSize || 100; 
-                const ranks = datesAsc.map(d => history[d] || maxRank); 
+                const ranks = datesAsc.map(d => Number.isFinite(history[d]) ? history[d] : null); 
                 const width = 400; 
                 const height = 160; 
                 const dx = width / (datesAsc.length - 1 || 1);
                 
                 let pts = ranks.map((rank, i) => {
+                    if(rank === null) return null;
                     let safeRank = Math.min(Math.max(rank, 1), maxRank);
                     let y = ((safeRank - 1) / (maxRank - 1 || 1)) * height;
                     let xPct = (i / (datesAsc.length - 1 || 1)) * 100 + '%';
                     let yPct = (y / height) * 100 + '%';
-                    return { x: i * dx, y: y, xPct, yPct, date: datesAsc[i], rank: safeRank };
+                    return { x: i * dx, y: y, xPct, yPct, date: datesAsc[i], rank: safeRank, sourceIndex: i };
                 });
                 
-                const linePath = pts.map((pt, i) => `${i === 0 ? 'M' : 'L'} ${pt.x},${pt.y}`).join(' ');
+                pts = pts.filter(Boolean);
+                const linePath = pts.map((pt, i) => `${i === 0 || pt.sourceIndex !== pts[i-1].sourceIndex+1 ? 'M' : 'L'} ${pt.x},${pt.y}`).join(' ');
                 return { linePath, areaPath: '', points: pts };
             },
             
             async copySingleSector(sectorObj) {
-                try { await this.ensureConstituents(); } catch (err) { await this.useLegacyFallback(); }
-                if (!this.constituentMap) { alert('成分数据加载失败，请重试。'); return; }
-                const rawName = this.cleanName(sectorObj.index_name);
-                const codes = this.constituentMap[rawName] || this.constituentMap[sectorObj.index_name] || [];
-                if (codes.length === 0) { alert(`未能找到【${rawName}】的成分股数据。`); return; }
-                
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(codes.join('\n')).then(() => {
-                        alert(`成功！已复制【${rawName}】的 ${codes.length} 只成分股到剪贴板。`);
-                    }).catch(err => {
-                        console.error('Clipboard API error:', err);
-                        this.fallbackCopyTextToClipboard(codes.join('\n'), rawName, codes.length);
-                    });
-                } else {
-                    this.fallbackCopyTextToClipboard(codes.join('\n'), rawName, codes.length);
-                }
+                const date=this.memberDate(), row={...sectorObj}, rawName=this.cleanName(row.index_name);
+                const codes=await this.exportMembers([row],date);
+                if(!codes) return;
+                if(!codes.length) { alert('该日期已确认成员为空。'); return; }
+                if(navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(codes.join('\n')).then(()=>alert(`已复制【${rawName}】${date}的 ${codes.length} 只成分股。`))
+                        .catch(()=>this.fallbackCopyTextToClipboard(codes.join('\n'),rawName,codes.length));
+                } else this.fallbackCopyTextToClipboard(codes.join('\n'),rawName,codes.length);
             },
-            
             fallbackCopyTextToClipboard(text, rawName, count) {
                 var textArea = document.createElement("textarea");
                 textArea.value = text;
@@ -1854,41 +1401,28 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             },
 
             async exportSingleSector(sectorObj) {
-                try { await this.ensureConstituents(); } catch (err) { await this.useLegacyFallback(); }
-                if (!this.constituentMap) { alert('成分数据加载失败，请重试。'); return; }
-                const rawName = this.cleanName(sectorObj.index_name);
-                const codes = this.constituentMap[rawName] || this.constituentMap[sectorObj.index_name] || [];
-                if (codes.length === 0) { alert(`未能找到【${rawName}】的成分股数据。`); return; }
-                let blob = new Blob([codes.join('\n')], { type: 'text/plain;charset=utf-8' });
-                let url = URL.createObjectURL(blob);
-                let link = document.createElement('a');
-                link.href = url;
-                let dateStr = this.selectedDate.replace(/-/g, '');
-                link.download = `${dateStr}_${rawName}_成分导出.txt`;
-                link.click();
-                URL.revokeObjectURL(url);
+                const exportDate=this.memberDate(), row={...sectorObj}, rawName=this.cleanName(row.index_name);
+                const codes=await this.exportMembers([row],exportDate);
+                if(!codes) return;
+                if(!codes.length) { alert('该日期已确认成员为空。'); return; }
+                this.downloadMemberCodes(codes,`${exportDate.replace(/-/g,'')}_${rawName}_成分导出.txt`);
+            },
+            downloadMemberCodes(codes,name) {
+                const url=URL.createObjectURL(new Blob([codes.join('\n')],{type:'text/plain;charset=utf-8'}));
+                const link=document.createElement('a'); link.href=url; link.download='本地预览_'+name; link.click(); URL.revokeObjectURL(url);
             },
             async exportToTDX() {
-                if (this.selectedSectors.length === 0) { alert('请先勾选板块！'); return; }
-                try { await this.ensureConstituents(); } catch (err) { await this.useLegacyFallback(); }
-                if (!this.constituentMap) { alert('成分数据加载失败，请重试。'); return; }
-                let codesSet = new Set();
-                this.selectedSectors.forEach(nameWithSuffix => {
-                    const rawName = this.cleanName(nameWithSuffix);
-                    const codes = this.constituentMap[rawName] || this.constituentMap[nameWithSuffix] || [];
-                    codes.forEach(c => codesSet.add(c));
-                });
-                if (codesSet.size === 0) { alert('未能找到成分股数据。'); return; }
-                let blob = new Blob([Array.from(codesSet).join('\n')], { type: 'text/plain;charset=utf-8' });
-                let url = URL.createObjectURL(blob);
-                let link = document.createElement('a');
-                link.href = url;
-                link.download = `${this.selectedDate.replace(/-/g, '')}_勾选导出.txt`;
-                link.click();
-                URL.revokeObjectURL(url);
+                const exportNames=this.selectedSectors.slice(), exportDate=this.selectedDate;
+                if(!exportNames.length) { alert('请先勾选板块！'); return; }
+                const rows=exportNames.map(name=>(this.recordsByDate[exportDate] || []).find(row=>row.index_name===name));
+                const codes=await this.exportMembers(rows,exportDate);
+                if(!codes) return;
+                if(!codes.length) { alert('所选板块该日已确认成员为空。'); return; }
+                this.downloadMemberCodes(codes,`${exportDate.replace(/-/g,'')}_勾选导出.txt`);
             }
         }
     }).mount('#app');
+    dispatchEvent(new Event('cashflow-ready'));
     }
 
     // New protocol: manifest + latest shard on first paint. Every protocol
