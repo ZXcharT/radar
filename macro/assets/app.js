@@ -4,12 +4,12 @@ const THEME_KEY="onechart-theme";
 // Index identity colors are a visual candidate; kg has confirmed the neutral light UI, not these series values yet.
 const CHART_THEMES={
   light:{
-    crowding:"#d64b45",series:{"000001.SH":"#0168a5","000300.SH":"#2f3742","000016.SH":"#8e5403","399006.SZ":"#027743","000688.SH":"#6451ac","000852.SH":"#686801","932000.CSI":"#a32146"},
+    crowding:"#d64b45",series:{"000001.SH":"#0168a5","000300.SH":"#2f3742","000016.SH":"#8e5403","399006.SZ":"#027743","000688.SH":"#6451ac","000852.SH":"#686801","932000.CSI":"#a32146","H20269.CSI":"#006b6b"},
     muted:"#5b5b5b",axis:"#5b5b5b",axisLine:"#858585",splitLine:"#d6d6d6",tooltipBg:"#f7f7f7",tooltipBorder:"#c7c7c7",tooltipText:"#363636",tooltipShadow:"0 6px 18px rgba(0,0,0,.10)",
     sliderBorder:"#c7c7c7",sliderBg:"#ececec",sliderFill:"#e4e4e4",sliderHandle:"#5b5b5b",sliderHandleBorder:"#f7f7f7",sliderMove:"rgba(0,0,0,.03)",zoneGreen:"#5f8b84",zoneGold:"#9b7545"
   },
   dark:{
-    crowding:"#e06a64",series:{"000001.SH":"#62ace8","000300.SH":"#b8c2d1","000016.SH":"#d69551","399006.SZ":"#64ba85","000688.SH":"#a498e8","000852.SH":"#a9ab4f","932000.CSI":"#e589a5"},
+    crowding:"#e06a64",series:{"000001.SH":"#62ace8","000300.SH":"#b8c2d1","000016.SH":"#d69551","399006.SZ":"#64ba85","000688.SH":"#a498e8","000852.SH":"#a9ab4f","932000.CSI":"#e589a5","H20269.CSI":"#76c6c6"},
     muted:"#8f99a5",axis:"#8f99a5",axisLine:"#39424d",splitLine:"#252d36",tooltipBg:"rgba(24,29,35,.96)",tooltipBorder:"#39424d",tooltipText:"#c9d0d8",tooltipShadow:"0 6px 18px rgba(0,0,0,.40)",
     sliderBorder:"#39424d",sliderBg:"rgba(40,47,56,.78)",sliderFill:"rgba(142,172,210,.20)",sliderHandle:"#8eacd2",sliderHandleBorder:"#15191e",sliderMove:"rgba(142,172,210,.08)",zoneGreen:"#72a69d",zoneGold:"#c2a06b"
   }
@@ -17,8 +17,8 @@ const CHART_THEMES={
 const currentTheme=()=>document.documentElement.dataset.theme==="dark"?"dark":"light";
 const chartTheme=()=>CHART_THEMES[currentTheme()];
 const seriesColor=code=>chartTheme().series[code]||chartTheme().muted;
-const LABELS={"000001.SH":"上证","399006.SZ":"创业","000688.SH":"科创","000016.SH":"50","000300.SH":"300","000852.SH":"1000","932000.CSI":"2000"};
-const TAG_ORDER=["000001.SH","399006.SZ","000688.SH","000016.SH","000300.SH","000852.SH","932000.CSI"];
+const LABELS={"000001.SH":"上证","399006.SZ":"创业","000688.SH":"科创","000016.SH":"50","000300.SH":"300","000852.SH":"1000","932000.CSI":"2000","H20269.CSI":"红利低波·全收益"};
+const TAG_ORDER=["000001.SH","399006.SZ","000688.SH","000016.SH","000300.SH","000852.SH","932000.CSI","H20269.CSI"];
 const mode="precise"; // kg confirmed: show the original series, not the display smoothing.
 let data,chart,showCrowding=true,chosen=["000001.SH"],zoom={start:0,end:100},defaultZoom={start:0,end:100};
 let rangePreset='year',activeStudy=null,lastReadoutIndex=-1;
@@ -221,6 +221,7 @@ function tooltip(items){
     const norm=normalized(index),pos=data.dates.indexOf(date),price=index.close[pos],growth=price>0&&norm.base?100*(price/norm.base-1):null;
     const color=growth>0?'var(--up)':growth<0?'var(--down)':'var(--muted)';
     rows.push(`<span style="color:${seriesColor(index.code)}">●</span> ${item.seriesName}：区间涨跌幅 <span style="color:${color}">${growth===null?'--':signed(growth)+'%'}</span>`);
+    if(index.return_type==='total_return')rows.push(`<span style="color:${theme.muted}">含现金分红再投资；其余指数为价格口径。${date<index.list_date?'该日为正式发布前的回溯历史。':''}</span>`);
   }
   return rows.length?[`<div style="margin-bottom:5px;color:${theme.muted}">${isoDate(date)}</div>`,...rows].join('<br/>'):'';
 }
@@ -298,7 +299,8 @@ function updateStats(index=visibleEndIndex()){
 
 function renderSeriesTags(){
   const dispersion=`<button class="series-chip crowding${showCrowding?" active":""}" style="--series-color:${chartTheme().crowding}" type="button" data-role="dispersion" aria-pressed="${showCrowding}">离散指数</button>`;
-  const indices=TAG_ORDER.map(code=>{
+  // During rollout/last-good fallback, old seven-index publications remain usable.
+  const indices=TAG_ORDER.filter(code=>data.indices.some(item=>item.code===code)).map(code=>{
     const index=data.indices.find(item=>item.code===code),active=chosen.includes(code),scaleSelected=index.name===selectedScaleSeries;
     return `<button class="series-chip${active?" active":""}${scaleSelected?" scale-selected":""}" style="--series-color:${seriesColor(code)}" type="button" data-code="${code}" aria-pressed="${active}">${LABELS[code]}</button>`;
   }).join("");
