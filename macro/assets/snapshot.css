@@ -1,0 +1,31 @@
+/* Reuse the installed OneChart palette; preview never changes the live plots. */
+.snapshot-trigger{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:30px;padding:4px 9px;border:0;border-radius:8px;background:transparent;color:var(--muted);font:inherit;white-space:nowrap}
+.snapshot-trigger:hover{background:var(--hover);color:var(--text)}
+.site-global-tools{display:flex;align-items:center;justify-content:flex-end;gap:6px;width:auto}
+.site-global-tools .snapshot-trigger{width:30px;height:30px;padding:0}
+.snapshot-scopes{display:flex;align-items:center;gap:2px;padding:3px;background:var(--control);border-radius:9px}
+.snapshot-scopes button{min-height:28px;padding:3px 10px;border:0;border-radius:7px;background:transparent;color:var(--muted);font:inherit;white-space:nowrap}
+.snapshot-scopes button[aria-pressed=true]{background:var(--selected);color:var(--text)}
+.snapshot-scopes button:hover{color:var(--text)}
+#snapshot-dialog{width:min(1120px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--popup);color:var(--text);overflow:auto;overscroll-behavior:contain;box-shadow:0 16px 56px #0004;font:13px/1.5 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif}
+#snapshot-dialog::backdrop{background:#0007}
+.snapshot-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:0;border:0;background:none}
+.snapshot-heading h2{margin:0;color:var(--text);font-size:20px;font-weight:500}
+.snapshot-heading p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.snapshot-close{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted)}
+.snapshot-close:hover{background:var(--hover);color:var(--text)}
+.snapshot-options{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;margin:18px 0 14px;color:var(--muted);font-size:12px}
+.snapshot-options label{display:flex;align-items:center;gap:8px;min-height:28px;cursor:pointer;color:var(--text)}
+.snapshot-options input{margin:0;width:15px;height:15px;accent-color:var(--oc-accent)}
+#snapshot-dimensions{font-variant-numeric:tabular-nums}
+.snapshot-image-wrap{display:flex;align-items:center;justify-content:center;min-height:160px;background:var(--bg)}
+#snapshot-image{display:block;width:100%;height:auto}
+#snapshot-progress{padding:36px 18px;color:var(--muted);text-align:center}
+.snapshot-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:16px}
+#snapshot-feedback{flex:1;min-width:140px;margin:0;color:var(--muted);font-size:12px}
+.snapshot-actions>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.snapshot-actions button{min-height:34px;padding:6px 12px;border:0;border-radius:8px;background:var(--control);color:var(--text);font:inherit}
+.snapshot-actions button:hover{background:var(--selected)}
+.snapshot-actions #snapshot-save{background:var(--selected)}
+#snapshot-dialog button:disabled{opacity:.4;cursor:default}
+@media(max-width:600px){#snapshot-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px);padding:16px}.snapshot-heading h2{font-size:18px}.snapshot-options{margin:14px 0 10px}.snapshot-actions{align-items:stretch}.snapshot-actions>div{width:100%;justify-content:flex-end}.snapshot-trigger{gap:4px;padding-inline:6px}.snapshot-scopes{width:100%}.snapshot-scopes button{flex:1}}
