@@ -109,7 +109,7 @@
     return { kind, contribution, p, date, caption, legend, details, chart, dataAsOf: text('as-of'), portrait: innerWidth < 800,
       dataStatus: text('dispersion-state'),
       logo: loadImage(`/macro/assets/onechart-lockup-horizontal-${light ? 'black' : 'white'}.svg`),
-      note: contribution ? '排名区间沿用当前页面；曲线展示90日窗口，二者分别标注。' : '指数为区间归一化表现；红利低波计入分红再投，其余指数为价格口径。' };
+      note: contribution ? '排名区间沿用当前页面；曲线展示90日窗口，二者分别标注。' : '指数为区间归一化表现；是否计入分红再投，以各曲线的口径说明为准。' };
   }
   function drawText(ctx, value, x, y, size, color, maxWidth, align = 'left', weight = 400) {
     ctx.font = `${weight} ${size}px -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif`; ctx.fillStyle = color; ctx.textAlign = align;
