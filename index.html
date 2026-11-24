@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>板块资金雷达 | OneChart</title>
     <meta name="description" content="观察板块资金流向、强弱变化与市场主线。">
-    <link rel="icon" type="image/svg+xml" href="/assets/cashflow/c09eb3de88b1/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="/assets/cashflow/ed742a204ca1/favicon.svg">
     
     
     
@@ -24,8 +24,8 @@
             document.documentElement.style.colorScheme = theme;
         })();
     </script>
-    <script src="assets/cashflow/c09eb3de88b1/theme.js"></script>
-    <script src="assets/cashflow/c09eb3de88b1/search.js"></script>
+    <script src="assets/cashflow/ed742a204ca1/theme.js"></script>
+    <script src="assets/cashflow/ed742a204ca1/search.js"></script>
     <link rel="stylesheet" href="assets/tailwind.5d4ecc19b1b9.css">
     <script src="assets/vendor/vue.global.prod.3.5.18.js"></script>
     <style>
@@ -593,15 +593,15 @@
         .mobile-radar-only .data-row > div:nth-child(4) { font-size: 12px !important; line-height: 1.4; }
         .mobile-radar-only .rank-tag { font-size: 12px; }
     </style>
-<link rel="stylesheet" href="assets/cashflow/c09eb3de88b1/ui.css">
-<link rel="stylesheet" href="assets/cashflow/c09eb3de88b1/controls.css">
-<script defer src="assets/cashflow/c09eb3de88b1/ui.js"></script>
+<link rel="stylesheet" href="assets/cashflow/ed742a204ca1/ui.css">
+<link rel="stylesheet" href="assets/cashflow/ed742a204ca1/controls.css">
+<script defer src="assets/cashflow/ed742a204ca1/ui.js"></script>
 <link rel="stylesheet" href="assets/share/share-core.css"><script defer src="assets/share/share-core.js"></script><script defer src="assets/share/cashflow-snapshot.js"></script>
 </head>
-<body class="oc-radar-page" data-cashflow-ui="c09eb3de88b1">
+<body class="oc-radar-page" data-cashflow-ui="ed742a204ca1">
 
 <header class="site-header"><div class="site-inner">
-<a class="site-brand" href="https://onechartlab.com/" aria-label="OneChart 首页"><img class="logo-day" src="assets/cashflow/c09eb3de88b1/logo-black.svg" alt="OneChart"><img class="logo-night" src="assets/cashflow/c09eb3de88b1/logo-white.svg" alt="OneChart"></a>
+<a class="site-brand" href="https://onechartlab.com/" aria-label="OneChart 首页"><img class="logo-day" src="assets/cashflow/ed742a204ca1/logo-black.svg" alt="OneChart"><img class="logo-night" src="assets/cashflow/ed742a204ca1/logo-white.svg" alt="OneChart"></a>
 <nav class="site-links" aria-label="OneChart 功能导航"><a href="https://onechartlab.com/" aria-current="page">资金流</a><a href="https://onechartlab.com/macro/">离散度</a><a href="https://amv.onechartlab.com/">活跃度</a><a href="https://into.onechartlab.com/">研究</a><a href="https://calc.onechartlab.com/">仓位计算</a><a href="https://simu.onechartlab.com/">概率模拟</a></nav>
 <button id="theme-toggle" class="site-theme" type="button" title="切换至日间模式" aria-label="切换至日间模式"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4L19 5"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20.5 14a8.5 8.5 0 0 1-10.5-10.5A8.5 8.5 0 1 0 20.5 14Z"/></svg></button>
 </div></header>
@@ -619,7 +619,7 @@
 <div id="app" v-cloak class="oc-app relative"></div>
 
 
-<script src="assets/cashflow/c09eb3de88b1/render.js"></script>
+<script src="assets/cashflow/ed742a204ca1/render.js"></script>
 <script>
     // 异步加载数据，不阻塞页面渲染
     const { createApp } = Vue;
@@ -634,7 +634,7 @@
             
             return {
                 recordsByDate: (window._initialRecordsByDate || {}),
-                loadingPromises: {},
+                loadingPromises: {}, dateDocumentRefs: {}, loadingDateRefs: {}, rankHistoryRef: null,
                 rankHistoryMap: (window.RANK_HISTORY_MAP || null),
                 constituentMap: (window.CONSTITUENT_MAP || null),
                 rankHistoryPromise: null,
@@ -734,8 +734,9 @@
                 const date=this.selectedDate, status=this.detailStatusFor(date);
                 let text=status==='legacy'?'数据截至 '+date:
                     status==='complete'?'板块及个股数据已更新至 '+date:
-                    status==='delayed'?'板块已更新至 '+date+'；个股数据更新延迟，系统仍在补充，齐全后会自动更新。':
-                    '板块已更新至 '+date+'；个股数据补充中，齐全后会自动更新。';
+                    status==='delayed'?'板块已更新至 '+date+'；个股可用项已显示，缺失项仍在补充。':
+                    '板块已更新至 '+date+'；个股可用项陆续更新，缺失项留空。';
+                if(window._manifest?.board_status?.dates?.[date]?.state==='partial')text=date+' 的可用内容已更新；缺失指标留空，系统继续补充。';
                 if(this.updateCheckFailed)text+=' 暂未取得最新更新状态，稍后自动重试。';
                 return text;
             },
@@ -759,14 +760,13 @@
                         var chg = {};
                         ['Swing', 'Ratio', 'Amount'].forEach(function(metric) {
                             var key = metric + suffix;
-                            chg[metric + '_Rank_Chg'] = (item[key] !== undefined) ? item[key] : 0;
+                            chg[metric + '_Rank_Chg'] = Number.isFinite(item[key]) ? item[key] : null;
                         });
                         return Object.assign({}, item, chg);
                     });
                 }
                 var targetDateIndex = this.availableDatesList.indexOf(this.selectedDate);
                 var pastDateIndex = targetDateIndex + this.rankChangeDays;
-                if (pastDateIndex >= this.availableDatesList.length) pastDateIndex = this.availableDatesList.length - 1;
                 var pastDateStr = this.availableDatesList[pastDateIndex];
                 var self = this;
                 return this.currentData.map(function(item) {
@@ -777,7 +777,7 @@
                         if (pastRank && currRank) {
                             chg[metric + '_Rank_Chg'] = pastRank - currRank;
                         } else {
-                            chg[metric + '_Rank_Chg'] = 0;
+                            chg[metric + '_Rank_Chg'] = null;
                         }
                     });
                     return Object.assign({}, item, chg);
@@ -787,8 +787,8 @@
             topList() {
                 if (this.activeTab === 'RankChange') {
                     const key = this.rankChangeMetric + '_Rank_Chg';
-                    const sorted = [...this.processedData].sort((a, b) => b[key] - a[key]);
-                    const count = Math.max(1, Math.ceil(this.processedData.length * 0.1));
+                    const sorted = this.processedData.filter(item => Number.isFinite(item[key])).sort((a, b) => b[key] - a[key]);
+                    const count = Math.ceil(sorted.length * 0.1);
                     let top10 = sorted.slice(0, count);
                     return this.applySort(top10, 'top', key, 'desc');
                 }
@@ -799,12 +799,12 @@
             botList() {
                 if (this.activeTab === 'RankChange') {
                     const key = this.rankChangeMetric + '_Rank_Chg';
-                    const sorted = [...this.processedData].sort((a, b) => a[key] - b[key]);
-                    const count = Math.max(1, Math.ceil(this.processedData.length * 0.1));
+                    const sorted = this.processedData.filter(item => Number.isFinite(item[key])).sort((a, b) => a[key] - b[key]);
+                    const count = Math.ceil(sorted.length * 0.1);
                     let bot10 = sorted.slice(0, count);
                     return this.applySort(bot10, 'bot', key, 'asc');
                 }
-                let list = this.processedData.filter(d => d[this.activeTab + '_RankPct'] <= 10);
+                let list = this.processedData.filter(d => Number.isFinite(d[this.activeTab + '_RankPct']) && d[this.activeTab + '_RankPct'] <= 10);
                 let defKey = this.activeTab === 'Amount' ? 'Amount_Raw_BN' : this.activeTab + '_Score';
                 return this.applySort(list, 'bot', defKey, 'asc');
             },
@@ -952,7 +952,7 @@
                 return status==='pending' && this.updateClock>=Date.parse(date+'T21:00:00+08:00')?'delayed':status;
             },
             detailPendingText(date) {
-                return this.detailStatusFor(date)==='delayed'?'该日个股数据更新延迟，系统仍在补充，齐全后会自动更新。':'该日成员与个股数据补充中，齐全后会自动更新。';
+                return this.detailStatusFor(date)==='delayed'?'该项数据尚未取得，系统继续补充；其他可用项不受影响。':'该项成员或个股数据仍在补充，已取得的其他项目可正常查看。';
             },
             async pollUpdates() {
                 if(this.updatePolling)return;
@@ -970,8 +970,13 @@
                             detail_status:fresh.detail_status?{...fresh.detail_status,dates:{...previous.detail_status?.dates,...fresh.detail_status.dates}}:undefined};
                         this.availableDates=[...new Set([...fresh.AVAILABLE_DATES,this.selectedDate])].sort((a,b)=>b.localeCompare(a));
                         this.availableDatesList=this.availableDates;
+                        if(this.selectedDate===previous.LATEST_DATE && fresh.LATEST_DATE>this.selectedDate)this.selectedDate=fresh.LATEST_DATE;
                         this.updateRevision++;
                     }
+                    // Cache identity is the dated content reference, not only the day.
+                    const refreshDates=[...new Set([...Object.keys(this.recordsByDate),this.selectedDate])]
+                        .filter(date=>window._manifest.files.dates[date]);
+                    await Promise.all([this.ensureRankHistory(),...refreshDates.map(date=>this.loadDateRecords(date))]);
                     this.updateCheckFailed=false;this.updateClock=Date.now();
                     const newRef=window._manifest.files.constituents_by_date?.[observed];
                     const changed=newRef!==oldRef || JSON.stringify(oldStatus)!==JSON.stringify(window._manifest.detail_status?.dates?.[observed]);
@@ -1007,7 +1012,6 @@
             },
             async exportMembers(rows, date) {
                 let doc;
-                if(['pending','delayed'].includes(this.detailStatusFor(date))) { alert(this.detailPendingText(date)); return null; }
                 try { doc=await this.ensureConstituents(date); }
                 catch (_) { alert('该日期成员加载失败，未复制或导出；不会使用其他日期回填。'); return null; }
                 if(rows.some(row => !row || !Object.prototype.hasOwnProperty.call(doc.members,row.ts_code))) {
@@ -1029,11 +1033,14 @@
                 return nameWithSuffix.replace(/\s+\((?:行业|二级行业|三级行业|概念|风格|地域)\)$/, '').trim();
             },
             getMirrorMetric(item) {
-                if (!item) return 0;
-                if (this.activeTab === 'RankChange') return Number(item[this.rankChangeMetric + '_Rank_Chg'] || 0);
-                if (this.activeTab === 'Amount') return Number(item.Amount_Raw_BN || 0);
-                if (this.activeTab === 'Ratio') return Number(item.Ratio_Raw_Pct || 0) * 100;
-                return Number(item.Swing_Ratio_Val || 0) * 100;
+                if (!item) return null;
+                const key = this.activeTab === 'RankChange' ? this.rankChangeMetric + '_Rank_Chg' :
+                    this.activeTab === 'Amount' ? 'Amount_Raw_BN' : this.activeTab === 'Ratio' ? 'Ratio_Raw_Pct' : 'Swing_Ratio_Val';
+                const value = item[key];
+                return Number.isFinite(value) ? value * (this.activeTab === 'Ratio' || this.activeTab === 'Swing' ? 100 : 1) : null;
+            },
+            formatNullable(value, decimals=1, suffix='') {
+                return Number.isFinite(value) ? value.toFixed(decimals) + suffix : '-';
             },
             formatMirrorMetric(item) {
                 const value = this.getMirrorMetric(item);
@@ -1045,7 +1052,8 @@
                 return sign + absolute.toFixed(2) + '%';
             },
             mirrorBarStyle(item) {
-                const value = Math.abs(this.getMirrorMetric(item));
+                const raw = this.getMirrorMetric(item);
+                const value = Number.isFinite(raw) ? Math.abs(raw) : 0;
                 const ratio = this.mirrorScaleMax ? Math.min(100, value / this.mirrorScaleMax * 100) : 0;
                 return { '--mirror-width': ratio.toFixed(2) + '%' };
             },
@@ -1061,7 +1069,7 @@
                 if (!item || !aux || !aux.key) return null;
                 const key = side === 'bot' ? aux.botKey : aux.topKey;
                 const value = item[key];
-                return Number.isFinite(value) ? value : Number(value);
+                return Number.isFinite(value) ? value : null;
             },
             mirrorAuxValue(item, aux, side) {
                 const value = this.mirrorAuxRaw(item, aux, side);
@@ -1193,18 +1201,14 @@
                 return '<span class="text-slate-300 ml-1 opacity-30 hover:opacity-100 transition-opacity">↕</span>';
             },
             applySort(list, board, defaultRankKey, defaultOrder) {
-                let state = this.sortState[board];
-                if (!state.key || !state.order) {
-                    return list.sort((a, b) => {
-                        let valA = a[defaultRankKey] || 0;
-                        let valB = b[defaultRankKey] || 0;
-                        return defaultOrder === 'desc' ? valB - valA : valA - valB;
-                    });
-                }
+                const state = this.sortState[board];
+                const key = state.key && state.order ? state.key : defaultRankKey;
+                const order = state.key && state.order ? state.order : defaultOrder;
                 return list.sort((a, b) => {
-                    let valA = a[state.key] || 0;
-                    let valB = b[state.key] || 0;
-                    return state.order === 'desc' ? valB - valA : valA - valB;
+                    const valA = a[key], valB = b[key];
+                    if (!Number.isFinite(valA)) return Number.isFinite(valB) ? 1 : 0;
+                    if (!Number.isFinite(valB)) return -1;
+                    return order === 'desc' ? valB - valA : valA - valB;
                 });
             },
             async openModal(sectorObj, direction, observationDate) {
@@ -1276,44 +1280,54 @@
                 }
             },
             loadDateRecords(dateStr) {
-                if (this.recordsByDate[dateStr]) return Promise.resolve(this.recordsByDate[dateStr]);
-                if (this.loadingPromises[dateStr]) return this.loadingPromises[dateStr];
                 var manifest = window._manifest;
                 var path = manifest && manifest.files && manifest.files.dates && manifest.files.dates[dateStr];
                 if (!path) return Promise.reject(new Error('Missing date shard: ' + dateStr));
+                if (this.recordsByDate[dateStr] && this.dateDocumentRefs[dateStr]===path) return Promise.resolve(this.recordsByDate[dateStr]);
+                if (this.loadingPromises[dateStr] && this.loadingDateRefs[dateStr]===path) return this.loadingPromises[dateStr];
                 var self = this;
                 var request = fetchJson(path, function(data) {
                     return Array.isArray(data) && data.length > 0 && data.every(function(record) {
                         return record && record.trade_date === dateStr;
                     });
                 }).then(function(records) {
-                    self.recordsByDate[dateStr] = records;
+                    if(window._manifest.files.dates[dateStr]===path) {
+                        self.recordsByDate[dateStr] = records; self.dateDocumentRefs[dateStr] = path;
+                        if(self.modalData && self.memberDate()===dateStr) {
+                            const row=records.find(item=>item.ts_code===self.modalData.ts_code);
+                            if(row)self.modalData=row;
+                        }
+                    }
                     return records;
                 }).finally(function() {
-                    delete self.loadingPromises[dateStr];
+                    if(self.loadingDateRefs[dateStr]===path) {
+                        delete self.loadingPromises[dateStr]; delete self.loadingDateRefs[dateStr];
+                    }
                 });
-                this.loadingPromises[dateStr] = request;
+                this.loadingPromises[dateStr] = request; this.loadingDateRefs[dateStr] = path;
                 return request;
             },
             ensureRankHistory() {
-                if (this.rankHistoryMap) return Promise.resolve(this.rankHistoryMap);
-                if (this.rankHistoryPromise) return this.rankHistoryPromise;
                 var manifest = window._manifest;
                 var path = manifest && manifest.files && manifest.files.rank_history;
                 if (!path) return Promise.reject(new Error('Missing rank history shard'));
+                if (this.rankHistoryMap && this.rankHistoryRef===path) return Promise.resolve(this.rankHistoryMap);
+                if (this.rankHistoryPromise && this.rankHistoryRequestRef===path) return this.rankHistoryPromise;
+                this.rankHistoryRequestRef=path;
                 var self = this;
                 this.rankHistoryPromise = fetchJson(path, function(data) {
                     return data && typeof data === 'object' && !Array.isArray(data);
                 }).then(function(data) {
-                    self.rankHistoryMap = data;
-                    window.RANK_HISTORY_MAP = data;
+                    if(window._manifest.files.rank_history===path) {
+                        self.rankHistoryMap = data; self.rankHistoryRef=path;
+                        window.RANK_HISTORY_MAP = data;
+                    }
                     return data;
-                }).finally(function() { self.rankHistoryPromise = null; });
+                }).finally(function() { if(self.rankHistoryRequestRef===path)self.rankHistoryPromise = null; });
                 return this.rankHistoryPromise;
             },
             ensureConstituents(date) {
                 date = date || this.memberDate();
-                if(['pending','delayed'].includes(this.detailStatusFor(date)))return Promise.reject(new Error('Details pending'));
                 const manifest = window._manifest;
                 const path = manifest && manifest.files && manifest.files.constituents_by_date && manifest.files.constituents_by_date[date];
                 if(!path) return Promise.reject(new Error('Missing dated membership'));
@@ -1343,7 +1357,6 @@
             async refreshSimilarContext() {
                 const token=++this.memberViewToken, date=this.memberDate(), code=this.modalData?.ts_code;
                 this.similarSectors=[]; this.similarNotice='正在读取该日期成员…';
-                if(['pending','delayed'].includes(this.detailStatusFor(date))){this.similarNotice=this.detailPendingText(date);return;}
                 try {
                     await Promise.all([this.loadDateRecords(date),this.ensureConstituents(date)]);
                     if(token!==this.memberViewToken || !this.modalData || this.modalData.ts_code!==code || this.memberDate()!==date) return;
